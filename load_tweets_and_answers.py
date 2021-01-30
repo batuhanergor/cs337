@@ -2,7 +2,7 @@ import json
 import pandas as pd
 
 def load_tweets(filename):
-    return pd.read_json(filename)
+    return pd.read_json(filename).text.to_numpy()
 
 def load_answers(filename):
     with open(filename) as f:
@@ -16,5 +16,3 @@ def load_answers(filename):
 
 # hosts, awards, nominees, presenters, winner = load_answers('gg2013answers.json')
 # tweets = load_tweets('gg2013.json')
-
-
