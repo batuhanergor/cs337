@@ -1,7 +1,6 @@
 from filter_tweets import filter_tweets, capture_groups, lowercase_array
 from load_tweets_and_answers import load_tweets, load_answers
 import numpy as np
-import re
 
 def num_hosts(sorted_counts):
     return 2 if sorted_counts[-2] >= sorted_counts[-1] - sorted_counts[-1]*0.1 else 1
@@ -16,7 +15,7 @@ def get_hosts(year):
     nh = num_hosts(np.sort(counts))
     return np.sort(lowercase_array(values[np.argsort(counts)][-nh:]))
 
-    
+
 answers = load_answers(f'gg2013answers.json')
 print(f'Answers: {answers["hosts"]}')
 print(f'Results: {get_hosts("2013")}')
