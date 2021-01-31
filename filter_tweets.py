@@ -1,11 +1,11 @@
 import numpy as np
 import re
 
-def filter_tweets(tweets, pat):
+def filter_tweets(tweets, pat, exclude=False):
     ''' 
-        Returns a numpy array of all tweets containing a pattern 
+        Returns a numpy array of all tweets containing (or not) a pattern 
     '''
-    return tweets[np.vectorize(lambda x: re.search(pat, x) != None)(tweets)]
+    return tweets[np.vectorize(lambda x: re.search(pat, x) == None if exclude else re.search(pat, x) != None)(tweets)]
 
 def capture_groups(tweets, pat):
     ''' 
