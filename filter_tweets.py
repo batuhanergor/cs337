@@ -5,8 +5,8 @@ def filter_tweets(tweets, pats, exclude=False):
     ''' 
         Returns a numpy array of all tweets including (or excluding) a list of patterns.
     '''
-    combine_reg = '(' + '|'.join(map(str, pats)) +')'
-    return tweets[np.vectorize(lambda x: re.search(combine_reg, x.lower()) == None if exclude else re.search(combine_reg, x.lower()) != None)(tweets)]
+    pat = '(' + '|'.join(map(str, pats)) +')'
+    return tweets[np.vectorize(lambda x: re.search(pat, x.lower()) == None if exclude else re.search(pat, x.lower()) != None)(tweets)]
 
 def capture_groups(tweets, pat):
     ''' 
