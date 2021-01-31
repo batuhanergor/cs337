@@ -19,7 +19,7 @@ def load_answers(filename):
     awards = award_data.keys()
     rest = [{k: award_data[k][key] for k in awards} for key in ['nominees','presenters','winner']]
     nominees, presenters, winner = rest[0], rest[1], rest[2]
-    return hosts, awards, nominees, presenters, winner
+    return {"hosts":hosts, "awards":awards, "nominess":nominees, "presenters":presenters, "winner":winner}
 
 # hosts, awards, nominees, presenters, winner = load_answers('gg2013answers.json')
 # tweets = load_tweets('gg2013.json')
