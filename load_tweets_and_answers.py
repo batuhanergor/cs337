@@ -2,14 +2,16 @@ import json
 import numpy as np
 
 def load_tweets(filename):
-    ''' Returns text of all tweets in a numpy array ''' 
+    ''' 
+        Returns text of all tweets in a numpy array 
+    ''' 
     with open(filename) as f: data = json.load(f)
     return np.array([tweet.get('text') for tweet in data])
 
 def load_answers(filename):
     ''' 
-    Returns list of hosts, awards, nominees, presenters, and winners 
-    that our code will be checked against.
+        Returns list of hosts, awards, nominees, presenters, and winners 
+        that our code will be checked against.
     '''
     with open(filename) as f: data = json.load(f)
     hosts = data["hosts"]
