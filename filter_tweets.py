@@ -1,11 +1,12 @@
 import numpy as np
 import re
 
-def filter_tweets(tweets, pat, exclude=False):
+def filter_tweets(tweets, pats, exclude=False):
     ''' 
-        Returns a numpy array of all tweets containing (or not) a list of patterns 
+        Returns a numpy array of all tweets including (or excluding) a list of patterns 
+        *Note*: Order of patterns matters!
     '''
-    for p in pat:
+    for p in pats:
         tweets = tweets[np.vectorize(lambda x: re.search(p, x) == None if exclude else re.search(p, x) != None)(tweets)]
     return tweets
 
