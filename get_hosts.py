@@ -6,14 +6,17 @@ import re
 def num_hosts(sorted_counts):
     return 2 if sorted_counts[-2] >= sorted_counts[-1] - sorted_counts[-1]*0.1 else 1
 
-tweets = load_tweets('gg2013.json')
-answers = load_answers('gg2013answers.json')
-host_tweets = filter_tweets(tweets, ["host(s|ed|ing|)\s"])
-host_tweets = filter_tweets(host_tweets, ["(should(\'ve| have)\s)","next"], exclude=True)
-cg = capture_groups(host_tweets, "([A-Z][a-z]+(?=\s[A-Z])(?:\s[A-Z][a-z]+))")
-values, counts = np.unique(np.array([x for x in cg if "Golden Globes" not in x]), return_counts=True)
-# print(sorted(list(zip(values, counts)), key = lambda x: x[1]))
+def get_hosts(year):
+    tweets = load_tweets(f'gg{year}.json')
+    host_tweets = filter_tweets(tweets, ["host(s|ed|ing|)\s"])
+    host_tweets = filter_tweets(host_tweets, ["(should(\'ve| have)\s)","next"], exclude=True)
+    cg = capture_groups(host_tweets, "([A-Z][a-z]+(?=\s[A-Z])(?:\s[A-Z][a-z]+))")
+    cg = filter_tweets(cg, ["Golden Globes"], exclude=True)
+    values, counts = np.unique(cg, return_counts=True)
+    nh = num_hosts(np.sort(counts))
+    return np.sort(lowercase_array(values[np.argsort(counts)][-nh:]))
 
+    
+answers = load_answers(f'gg2013answers.json')
 print(f'Answers: {answers["hosts"]}')
-num_hosts = num_hosts(np.sort(counts))
-print(f'Results: {np.sort(lowercase_array(values[np.argsort(counts)][-num_hosts:]))}')
+print(f'Results: {get_hosts("2013")}')
