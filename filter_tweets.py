@@ -7,7 +7,7 @@ def filter_tweets(tweets, pats, exclude=False):
         *Note*: Order of patterns matters!
     '''
     for p in pats:
-        tweets = tweets[np.vectorize(lambda x: re.search(p, x) == None if exclude else re.search(p, x) != None)(tweets)]
+        tweets = tweets[np.vectorize(lambda x: re.search(p, x.lower()) == None if exclude else re.search(p, x.lower()) != None)(tweets)]
     return tweets
 
 def capture_groups(tweets, pat):
