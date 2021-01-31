@@ -1,12 +1,17 @@
 import json
-import pandas as pd
+import numpy as np
 
 def load_tweets(filename):
-    return pd.read_json(filename).text.to_numpy()
+    ''' Returns text of all tweets in a numpy array ''' 
+    with open(filename) as f: data = json.load(f)
+    return np.array([tweet.get('text') for tweet in data])
 
 def load_answers(filename):
-    with open(filename) as f:
-        data = json.load(f)
+    ''' 
+    Returns list of hosts, awards, nominees, presenters, and winners 
+    that our code will be checked against.
+    '''
+    with open(filename) as f: data = json.load(f)
     hosts = data["hosts"]
     award_data = data['award_data']
     awards = award_data.keys()
