@@ -9,8 +9,8 @@ def num_hosts(sorted_counts):
     return 2 if sorted_counts[-2] >= sorted_counts[-1] - sorted_counts[-1]*0.2 else 1
 
 def get_hosts(year):
-    tweets = load_tweets(f'gg{year}.json')
-    host_tweets = filter_tweets(tweets, ["host(s|ed|ing|)\s"])
+    tweets = load_tweets(f'../data/gg{year}.json')
+    host_tweets = filter_tweets(tweets, ["host(s|ed|ing|\s|)"])
     host_tweets = filter_tweets(host_tweets, ["(should(\'ve| have)\s)","next"], exclude=True)
     cg = capture_groups(host_tweets, "([A-Z][a-z]+(?=\s[A-Z])(?:\s[A-Z][a-z]+))")
     cg = filter_tweets(cg, ["Golden Globes"], exclude=True)
@@ -18,5 +18,5 @@ def get_hosts(year):
     nh = num_hosts(np.sort(counts))
     return np.sort(lowercase_array(values[np.argsort(counts)][-nh:]))
 
-print(f'Answers: {load_answers("gg2015answers.json")["hosts"]}')
+print(f'Answers: {load_answers("../data/gg2015answers.json")["hosts"]}')
 print(f'Results: {get_hosts("2015")}')
