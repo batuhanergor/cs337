@@ -68,6 +68,9 @@ def clean(inputs, to_clean):
             to_return.append(phrase)
     return(to_return)
 
+def clean2(inputs, to_clean):
+    return [phrase for phrase in inputs if not any(item in phrase for item in to_clean)]
+
 
 def exclude_award_name(inputs, award):
     to_return = []
@@ -75,3 +78,6 @@ def exclude_award_name(inputs, award):
         if phrase.lower() not in award.lower():
             to_return.append(phrase)
     return(to_return)
+
+def exclude_award_name2(inputs, award):
+    return [phrase for phrase in inputs if phrase.lower() not in award.lower()]
