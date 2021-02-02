@@ -13,10 +13,6 @@ def get_awards(year):
     # "(best\s(?:[A-Za-z\s]+)(?!(\s#|[.!?]|goes to)))" "(best(?:(.+?(?=(\sgoes|\sfor|[.?!])))))"
     print(cg)
     print(len(cg))
-    # cg = filter_tweets(cg, ["Golden Globes"], exclude=True, _or=True)
-    # values, counts = np.unique(cg, return_counts=True)
-    # nh = num_hosts(np.sort(counts))
-    # return np.sort(lowercase_array(values[np.argsort(counts)][-nh:]))
 
 # print(f'Answers: {load_answers("../data/gg2013answers.json")["hosts"]}')
 print(f'Results: {get_awards("2013")}')
