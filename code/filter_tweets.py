@@ -6,6 +6,7 @@ def filter_tweets(tweets, pats, exclude=False, _or=False):
         Returns a numpy array of all tweets including (or excluding) a list of patterns.
         Note: if _or==True, exclude or include if *any* pattern present.
               if _or==False, exclude or include if *all* patterns present.
+        **NOT CASE-SENSITIVE**
     '''
     if exclude:
         if _or: 
@@ -22,8 +23,9 @@ def capture_groups(tweets, pat):
     ''' 
         Returns a numpy array of the capture groups
         in each tweet using a pattern.
+        **CASE-SENSITVE**
     '''
-    return np.concatenate([re.findall(pat, x) for x in tweets]).flatten()
+    return np.concatenate([np.array(re.findall(pat, x)).flatten() for x in tweets]).flatten()
 
 def lowercase_array(arr):
     ''' 
