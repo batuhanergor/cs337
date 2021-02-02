@@ -3,8 +3,24 @@ import pandas as pd
 import re
 import Levenshtein
 import nltk
+import itertools
 nltk.download('averaged_perceptron_tagger')
 nltk.download('punkt')
+
+
+def keyword_filter(df, keywords=[], method='or'):
+    df = pd.DataFrame(data={'text': df})
+    to_return = pd.DataFrame([])
+    if method == 'or':
+        for keyword in keywords:
+            to_return = to_return.append(df[df['text'].str.lower(
+            ).str.contains(keyword)])
+    if method == 'and':
+        to_return = df.copy(deep=True)
+        for keyword in keywords:
+            to_return = to_return[to_return['text'].str.lower(
+            ).str.contains(keyword)]
+    return(to_return)
 
 
 def regex_filter(tweets, start, end):
@@ -13,6 +29,17 @@ def regex_filter(tweets, start, end):
         x = re.search(fr'{start}\.(.*?){end}', tweet.lower())
         if x:
             to_return.append(x)
+
+
+def leave_one_out(input_list):
+    subsets = []
+    for i in range(len(input_list)):
+        subsets.append(input_list[:i] + input_list[i+1:])
+    return(subsets)
+
+
+def get_combinations(input_list, n):
+    return(itertools.combinations(input_list, n))
 
 
 def remove_part_of_tweet(tweets, to_exclude):
@@ -29,7 +56,7 @@ def levenshtein_dict(input_dict, thresh):
     for key in sorted_dict:
         to_add = True
         for key2 in to_return.keys():
-            if Levenshtein.ratio(key2, key) > thresh:
+            if Levenshtein.ratio(key2.lower(), key.lower()) > thresh:
                 to_return[key2] += sorted_dict[key]
                 to_add = False
         if to_add:
@@ -57,6 +84,15 @@ def get_consecutive_pos(tweets, pos):
     return(to_return)
 
 
+def groups_around_regex(tweets, regex, position_to_take):
+    winners = []
+    for tweet in tweets:
+        m = re.match(rf"(.*){regex}(.*)", tweet)
+        if m:
+            winners.append(m.groups()[position_to_take])
+    return(winners)
+
+
 def clean(inputs, to_clean):
     to_return = []
     for phrase in inputs:
@@ -75,3 +111,36 @@ def exclude_award_name(inputs, award):
         if phrase.lower() not in award.lower():
             to_return.append(phrase)
     return(to_return)
+
+
+def clean_based_on_award(tweets, award_name):
+    df = pd.DataFrame(data={'text': tweets})
+    if 'actor' not in award_name.lower():
+        df = df[~df['text'].str.contains('actor')]
+    if 'actress' not in award_name.lower():
+        df = df[~df['text'].str.contains('actress')]
+    if 'director' not in award_name.lower():
+        df = df[~df['text'].str.contains('director')]
+    return(df['text'])
+
+
+def check_answer(answers, award, category, value):
+    return(value.lower() == answers[award][category].lower())
+
+
+def get_pos(df, pos):
+    to_return = []
+    for _, row in df.iterrows():
+        tags = nltk.pos_tag(nltk.word_tokenize(
+            re.sub('[^A-Za-z ]+', '', row['text'])))
+        proper_nouns = [x[0] for x in tags if x[1] == pos and x[0].lower() not in (
+            ['golden', 'globes', 'goldenglobes', 'rt'])]
+        to_return.extend(proper_nouns)
+    return(to_return)
+
+
+def get_top_k(input_list, k):
+    elements, counts = np.unique(input_list, return_counts=True)
+    zipped = list(zip(elements, counts))
+    ordered = sorted(zipped, key=lambda x: x[1], reverse=True)
+    return(ordered[:k])
