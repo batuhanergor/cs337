@@ -1,5 +1,7 @@
 import numpy as np
+import pandas as pd
 import re
+
 
 def filter_tweets(tweets, pats, exclude=False, _or=False):
     ''' 
@@ -9,7 +11,7 @@ def filter_tweets(tweets, pats, exclude=False, _or=False):
         **NOT CASE-SENSITIVE**
     '''
     if exclude:
-        if _or: 
+        if _or:
             return tweets[np.vectorize(lambda x: not any([re.search(r, x.lower()) != None for r in pats]))(tweets)]
         else:
             return tweets[np.vectorize(lambda x: not all([re.search(r, x.lower()) != None for r in pats]))(tweets)]
@@ -19,6 +21,7 @@ def filter_tweets(tweets, pats, exclude=False, _or=False):
         else:
             return tweets[np.vectorize(lambda x: all([re.search(r, x.lower()) != None for r in pats]))(tweets)]
 
+
 def capture_groups(tweets, pat):
     ''' 
         Returns a numpy array of the capture groups
@@ -26,6 +29,7 @@ def capture_groups(tweets, pat):
         **CASE-SENSITVE**
     '''
     return np.concatenate([np.array(re.findall(pat, x)).flatten() for x in tweets]).flatten()
+
 
 def lowercase_array(arr):
     ''' 
