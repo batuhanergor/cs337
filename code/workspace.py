@@ -4,33 +4,34 @@ import os
 import re
 from load_tweets_and_answers import load_tweets, load_answers
 from filter_tweets import filter_tweets, capture_groups, lowercase_array
-from helper_funcs import regex_filter, remove_part_of_tweet, levenshtein_dict, get_consecutive_pos, clean, exclude_award_name, leave_one_out, check_answer, groups_around_regex, clean_based_on_award
-from winner_helpers import get_winner_by_keyword_regex
+from helper_funcs import regex_filter, remove_part_of_tweet, levenshtein_dict, get_consecutive_pos, clean, exclude_award_name, leave_one_out, check_answer, groups_around_regex, clean_based_on_award_subject, clean_based_on_award_recipient
+from winner_helpers import get_winner_by_keyword_regex, get_winner_by_consecutive_pos, combine_preds
 
 
-def get_winners(award_names, tweets):
+def get_winners(award_names, tweets, winners):
+
     for idx, award in enumerate(award_names):
         print(
             f'Award {idx + 1} of {len(award_names)}: {award.title()}')
-        regex_winners = get_winner_by_keyword_regex(
+        winner_preds, nnp_potential_winners, potential_winners, winner_tweets, award_pos = get_winner_by_keyword_regex(
             tweets, award, [('(wins|receives)', 0), ('(goes|went) to', -1)])
-        # print(regex_winners)
+        # method2 = get_winner_by_consecutive_pos(tweets, award)
+        winner = list(combine_preds([winner_preds]).keys())[0]
+        try:
+            winner = list(combine_preds([winner_preds]).keys())[0]
+        except IndexError as e:
+            print(e)
+            winner = None
 
-        """
-        cg = get_consecutive_pos(winner_tweets, 'NNP')
-        cleaned = clean(cg, ['RT', '@', 'Golden', 'Globe', 'Award', '#'])
-        cleaned2 = clean(cleaned, award_pos)
-        cleaned3 = exclude_award_name(cleaned, award)
-        values, counts = np.unique(cleaned3, return_counts=True)
-        match_fuzzies = levenshtein_dict(dict(zip(values, counts)), 0.75)
-        print(match_fuzzies)
-        print(
-            f'\t{award.title()} $$$ {list(match_fuzzies.keys())[0].title()}')
-        """
+        if winner.lower() != winners[award]:
+            print(award_pos, potential_winners,
+                  nnp_potential_winners, winner_preds, winners[award])
 
 
-# Notes for determining award
+            # Notes for determining award
 """
+
+
 Need different approaches for awards won by a person and awards won by a movie
 
 General Approach:
@@ -40,7 +41,7 @@ General Approach:
     2) Remove tweets that have negatives, such a Didn't, Should have, etc.
     3) Remove specific phrases from tweets before trying regex matching
         * Name of award, Golden Globes
-    4) Look most commonly occuring substring (how to determine substring)
+    4) Look most commonly occuring substring(how to determine substring)
         * Consecutive NNPs?
         * Use POS tagging and look for NNP "wins/receives" NNP
 
@@ -56,6 +57,7 @@ if __name__ == "__main__":
                             'best television limited series or motion picture made for television', 'best performance by an actress in a limited series or a motion picture made for television', 'best performance by an actor in a limited series or a motion picture made for television', 'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best performance by an actress in a television series - musical or comedy', 'best performance by an actor in a television series - musical or comedy', 'best performance by an actress in a supporting role in a series, limited series or motion picture made for television', 'best performance by an actor in a supporting role in a series, limited series or motion picture made for television', 'cecil b. demille award']
 
 tweets13 = load_tweets('data/gg2013.json')
-# answers13 = load_answers('data/gg2013.json')
-get_winners(OFFICIAL_AWARDS_1315, tweets13)
+answers13 = load_answers('data/gg2013answers.json')
+winners = answers13['winner']
+get_winners(OFFICIAL_AWARDS_1315, tweets13, winners)
 # get_winners(["best motion picture - comedy or musical"], tweets13)

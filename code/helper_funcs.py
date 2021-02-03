@@ -65,6 +65,30 @@ def levenshtein_dict(input_dict, thresh):
         to_return.items(), key=lambda item: item[1], reverse=True)})
 
 
+def match_subsets(input_dict):
+    to_return = {}
+    to_remove = []
+    total = sum([v for k, v in input_dict.items()])
+    sorted_dict = {k: v for k, v in sorted(
+        input_dict.items(), key=lambda item: item[1], reverse=True)}
+    for key in sorted_dict:
+        to_add = True
+        value_to_add = sorted_dict[key]
+        for key2 in to_return.keys():
+            if key2 in key and sorted_dict[key]/total > 0.15:
+                value_to_add += sorted_dict[key2]
+                to_remove.append(key2)
+            elif key in key2:
+                to_return[key2] += sorted_dict[key]
+                to_add = False
+        if to_add:
+            to_return[key] = value_to_add
+    for x in to_remove:
+        del to_return[x]
+    return({k: v for k, v in sorted(
+        to_return.items(), key=lambda item: item[1], reverse=True)})
+
+
 def get_consecutive_pos(tweets, pos):
     to_return = []
     for tweet in tweets:
@@ -113,14 +137,51 @@ def exclude_award_name(inputs, award):
     return(to_return)
 
 
-def clean_based_on_award(tweets, award_name):
+def clean_based_on_award_recipient(tweets, award_name):
     df = pd.DataFrame(data={'text': tweets})
+    if 'actor' in award_name.lower():
+        df = df[df['text'].str.lower().str.contains('actor')]
+    elif 'actress' in award_name.lower():
+        df = df[df['text'].str.lower().str.contains('actress')]
+    elif 'director' in award_name.lower():
+        df = df[df['text'].str.lower().str.contains('director')]
+    elif 'song' in award_name.lower():
+        df = df[df['text'].str.lower().str.contains('song')]
+    elif 'score' in award_name.lower():
+        df = df[df['text'].str.lower().str.contains('score')]
+    else:
+        pass
     if 'actor' not in award_name.lower():
-        df = df[~df['text'].str.contains('actor')]
+        df = df[~df['text'].str.lower().str.contains('actor')]
     if 'actress' not in award_name.lower():
-        df = df[~df['text'].str.contains('actress')]
+        df = df[~df['text'].str.lower().str.contains('actress')]
     if 'director' not in award_name.lower():
-        df = df[~df['text'].str.contains('director')]
+        df = df[~df['text'].str.lower().str.contains('director')]
+    if 'song' not in award_name.lower():
+        df = df[~df['text'].str.lower().str.contains('song')]
+    if 'score' not in award_name.lower():
+        df = df[~df['text'].str.lower().str.contains('score')]
+    return(df['text'])
+
+
+def clean_based_on_award_subject(tweets, award_name):
+    df = pd.DataFrame(data={'text': tweets})
+    if 'motion picture' in award_name.lower():
+        df = df[df['text'].str.lower().str.contains('motion picture')]
+    elif 'series' in award_name.lower():
+        df = df[df['text'].str.lower().str.contains('series')]
+    elif 'television' in award_name.lower():
+        df = df[(df['text'].str.lower().str.contains('television')) |
+                (df['text'].str.lower().str.contains('tv'))]
+    else:
+        pass
+    if 'motion picture' not in award_name.lower():
+        df = df[~df['text'].str.lower().str.contains('motion picture')]
+    if 'series' not in award_name.lower():
+        df = df[~df['text'].str.lower().str.contains('series')]
+    if 'television' not in award_name.lower():
+        df = df[~(df['text'].str.lower().str.contains('television')) &
+                ~(df['text'].str.lower().str.contains('tv'))]
     return(df['text'])
 
 
