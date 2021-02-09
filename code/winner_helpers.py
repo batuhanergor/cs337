@@ -4,7 +4,7 @@ import os
 import re
 from load_tweets_and_answers import load_tweets, load_answers
 from filter_tweets import filter_tweets, capture_groups, lowercase_array
-from helper_funcs import regex_filter, remove_part_of_tweet, levenshtein_dict, get_consecutive_pos, clean, exclude_award_name, leave_one_out, check_answer, groups_around_regex, clean_based_on_award_recipient, get_combinations, clean_based_on_award_subject, match_subsets
+from helper_funcs import regex_filter, remove_part_of_tweet, levenshtein_dict, get_consecutive_pos, clean, exclude_award_name, leave_one_out, check_answer, groups_around_regex, clean_based_on_award_recipient, get_combinations, clean_based_on_award_subject, match_subsets, split_on
 
 
 def get_winner_by_keyword_regex(tweets, award, regex_pairs):
@@ -29,7 +29,7 @@ def get_winner_by_keyword_regex(tweets, award, regex_pairs):
         for subset in terms_to_use:
             award_tweets = np.concatenate(
                 (award_tweets, filter_tweets(tweets, subset)), axis=0)
-        if len(award_tweets) < 25:
+        if len(award_tweets) < 15:
             print(counter)
             if counter < 5:
                 continue
@@ -48,7 +48,7 @@ def get_winner_by_keyword_regex(tweets, award, regex_pairs):
                      ).to_csv(f'{award}_tweets.csv')
 
         if len(cleaned_winner_tweets) < 10:
-            print(counter)
+            # print(counter)
             if counter < 5:
                 continue
             # eventually give up if nothing signicant can be found in order to run the rest of the program
@@ -62,7 +62,8 @@ def get_winner_by_keyword_regex(tweets, award, regex_pairs):
                 groups_around_regex(cleaned_winner_tweets, pair[0], pair[1])
 
         # get the consecutive proper nouns from each of the strings potentially containing the winner's name
-        nnp_potential_winners = get_consecutive_pos(potential_winners, 'NNP')
+        nnp_potential_winners = get_consecutive_pos(
+            potential_winners, 'NNP')
         # cleaning proper nouns candidates list
         cleaned = clean(
             nnp_potential_winners, ['RT', '@', 'Golden', 'Globe', 'Award'])
