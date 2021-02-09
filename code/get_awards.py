@@ -27,7 +27,7 @@ def get_awards2(year):
     test = all_cg
     test = np.array(list(map(lambda s: award_process(s), test)))
     fuzzy_dict = fuzzyRatio(test, 90)
-    print(fuzzy_dict)
+    print({k: v for k, v in sorted(fuzzy_dict.items(), key=lambda item: item[1])})
     ret = np.array([k for k,v in fuzzy_dict.items() if v>5])
     ret = remove_if_subset(ret)
     print(np.unique(ret))
@@ -66,14 +66,42 @@ def get_awards(year):
 
 
 def remove_if_subset(strs):
-    return [s for s in strs if not any( all(sub in s2 for sub in re.sub("[^\w]+", '', s).split()) for s2 in strs if s!=s2)]
+    ret = []
+    for s in strs:
+        substr = multi_sub([["[\/.,-]", ' '],["[^\w\s]+", '']], s)
+        incl = True
+        for s2 in strs:
+            if s2!=s:
+                s2_split = multi_sub([["[\/.,-]", ' '],["[^\w\s]+", '']], s2)
+                if all(sub in s2_split or sub=='or' for sub in substr) and len(s2_split)-len(substr)<=3:
+                    incl = False
+                    break
+        if incl: 
+            ret.append(s)
+    return np.array(ret)
+    # return [s for s in strs if not any( all(sub in multi_sub([["[\/.,-]", ' '],["[^\w\s]+", '']], s2) or sub=='or' for sub in multi_sub([["[\/.,-]", ' '],["[^\w\s]+", '']], s)) for s2 in strs if s!=s2)]
 
+def multi_sub(pairs, s):
+    # ORDER MATTERS!
+    new_s = s
+    for p in pairs:
+        new_s = re.sub(p[0], p[1], new_s)
+    return new_s.split()
+
+# TODO: replace 'show' with 'series'
+#       replace 'movie' with 'motion picture'
+#       just 'series' -> 'television series'
+#       just 'television' -> 'television series'
 def award_process(award):
     award = re.sub('best actor','best performance by an actor', award) #award.replace('best actor','best performance by an actor')
     award = re.sub('best actress','best performance by an actress', award)
     award = re.sub('supporting actor', 'performance by an actor in a supporting role', award)
     award = re.sub('supporting actress', 'performance by an actress in a supporting role', award)
     award = re.sub('(?i)tv', 'television', award)
+    award = re.sub('show','series',award)
+    award = re.sub('movie','motion picture',award)
+    if 'series' in award and 'television' not in award:
+        award = re.sub('series', 'television series', award)
     return award
 
 def fuzzyRatio(cg, rat, lessThan=True):
@@ -92,8 +120,23 @@ def fuzzyRatio(cg, rat, lessThan=True):
                     else: d[other] +=1
     return d
 
-get_nominees('2013')
-# res = get_awards2("2015")
+res = get_awards2("2015")
+# s = ['best performance by an actress in a television drama','best performance by an actress--television drama']
+# ret = remove_if_subset(s)
+# print(ret)
+# s = ['best performance by an actor comedy/musical', 'best performance by an actor in a comedy/musical']
+# sub = re.sub("[^\w\s\/]+", '', s[0])#.split()
+# sub = re.sub("[\/.,-]", ' ', sub).split()
+# print(sub)
+# if all(sb in s[1] for sb in sub):
+#     print('ALL IN!')
+# else: print('NOT ALL IN!')
+# for sb in sub:
+    # print(f'{sb} {sb in s[1]}')
+# print(f'test: is best in \'best performance\': {"best" in "best performance by an actor in a comedy/musical"}')
+# s = 'best performance by an actress in television comedy'
+# sub = re.sub("[^\w\s]+", '', s).split()
+# print(sub)
 # ans = load_answers("../data/gg2015answers.json")["awards"]
 # # print(res)
 # # print(len(res))
