@@ -16,7 +16,7 @@ def load_answers(filename):
     with open(filename) as f: data = json.load(f)
     hosts = data["hosts"]
     award_data = data['award_data']
-    awards = award_data.keys()
+    awards = list(award_data.keys())
     rest = [{k: award_data[k][key] for k in awards} for key in ['nominees','presenters','winner']]
     nominees, presenters, winner = rest[0], rest[1], rest[2]
     return {"hosts":hosts, "awards":awards, "nominess":nominees, "presenters":presenters, "winner":winner}
