@@ -5,65 +5,45 @@ import numpy as np
 import re
 from fuzzywuzzy import fuzz
 import nltk
+from spellchecker import SpellChecker
 
-def get_awards2(year):
+
+def get_awards(year):
     tweets = load_tweets(f'../data/gg{year}.json')
-    # award_tweets = filter_tweets(tweets, ["(award for\s|nominated for\s|nomination for\s|goes to\s|winner of|won|wins|winning)"])
+    print(f'There are {len(tweets)} total tweets.')
     award_tweets = filter_tweets(tweets, ['(?i)rt\s','[Dd](ress|ressed)','(?i)(ever|worst|moment|moments|insults|jokes|insult|joke)'], exclude=True, _or=True)
     award_tweets = filter_tweets(award_tweets, ['(?i)best'])
-    # cg = capture_groups(award_tweets, "(?i)(best\s(.*?))(?:nominee|\sat||\sgoes to|\sto|\swinner|[.!?$:])")
-    # cg = np.array([s for s in cg if s.startswith('best')])#re.search('(?i)best', s)])
     cg2 = capture_groups(award_tweets, "(?i)(?:wins\s)(?:(best\s(.*?))(?=\shttp|\sto|\sand|\sat|(?!\smade)\sfor|\swinner|\sis|\sat|[.!?$:|#@]|\swell|\swith|\s\"|\sgolden|\sglobe|\s\(|\s[0-9+]|\sand|\saward))")
     cg2 = np.array([s for s in cg2 if s.startswith('best')]) #re.search('(?i)best', s)])
     all_cg = np.char.lower(cg2)
-    # all_cg = np.append(np.char.lower(cg), np.char.lower(cg2))
     all_cg = filter_tweets(all_cg, ['best of','who','the','\si\s','(?i)i\'m'], exclude=True, _or=True)
-    all_cg = [a for a in np.unique([b.rstrip() for b in all_cg]) if len(a.split())>2]
-    # all_cg = np.array([re.sub("[^a-zA-Z\s]+", "", s) for s in all_cg])
-    all_cg = np.array(list(map(lambda s: award_process(s), all_cg)))
-    # print(all_cg)
-    # print(len(all_cg))
-    # test = remove_if_subset(all_cg)
+    all_cg = [a for a in np.unique([b.rstrip() for b in all_cg]) if len(a.split())>1]
     test = all_cg
     test = np.array(list(map(lambda s: award_process(s), test)))
     fuzzy_dict = fuzzyRatio(test, 90)
     print({k: v for k, v in sorted(fuzzy_dict.items(), key=lambda item: item[1])})
     ret = np.array([k for k,v in fuzzy_dict.items() if v>5])
+    ret = spell_checker(ret)
     ret = remove_if_subset(ret)
-    print(np.unique(ret))
-    print(len(np.unique(ret)))
-    # print(len([a for a in np.unique([b.rstrip() for b in all_cg]) if len(a.split())>2]))
+    print(f'len before add: {len(ret)}')
+    ret = add_awards(ret)
+    ret = remove_if_subset(ret)
+    # ret = spell_checker(ret)
+    print(f'len after add: {len(ret)}')
+    unique = np.unique(ret)
+    print(unique)
+    print(len(unique))
 
-def get_awards(year):
-    tweets = load_tweets(f'../data/gg{year}.json')
-    # award_tweets = filter_tweets(tweets, ["(award\s|nominated\s|nomination\s|goes to\s|winner|won|wins|winning|\shttp)"])
-    award_tweets = filter_tweets(tweets, ['(?i)rt\s','[Dd](ress|ressed)','(?i)(ever|worst|moment|moments|insults|jokes|insult|joke|http|best use|presenter|host)'], exclude=True, _or=True)
-    cg = capture_groups(award_tweets, "(?i)(best\s(.*?))(?:\sgoes to|\sto|\swinner|[.!?$])")
-    cg = np.array([s for s in cg if re.search('(?i)best', s) and not re.search('[#@]', s)])
-    cg2 = capture_groups(award_tweets, "(?i)(?:wins\s|winner of\s)(?:(best\s(.*?))(?=\shttp|\sto|\sand|\sat|\sfor|\swinner|\sis|[.!?$|#@]))")
-    cg2 = np.array([s for s in cg2 if re.search('(?i)best', s) and not re.search('[#@]', s)])
-    # cg3 = capture_groups(award_tweets, "(?i)(?:wins\s)(?:(best\s(.*?))(?=\sat|\sfor|\swinner|\sis|[.!?$]))")
-    # cg3 = np.array([s for s in cg3 if re.search('(?i)best', s)])
-    # print(cg)
-    # print(len(cg))
-    # print(cg2)
-    # print(len(cg2))
-    # print(len(cg3))
-    # print(cg3)
-    all_cg = np.append(np.char.lower(cg), np.char.lower(cg2))
-    all_cg = np.array([s for s in all_cg if len(s.split()) >= 3])
-    all_cg = np.array([s for s in all_cg if s.startswith('best')])
-    all_cg = filter_tweets(all_cg, ['best of'], exclude=True)
-    print(all_cg)
-    print(len(all_cg))
-    # processed = award_process(all_cg)
-    # processed = np.array(list(map(lambda s: award_process(s), all_cg)))
-    # remove_processed = np.array([s for s in processed if not re.search('(?i)(golden globes|goldenglobes|\sfor\s[a-s]|#|http)', s)])
-    # fuzzy_dict = fuzzyRatio(remove_processed, 90)
-    # print(fuzzy_dict)
-    # ret = np.array([k for k,v in fuzzy_dict.items() if v>10])
-    # return ret
+def spell_checker(arr):
+    spell = SpellChecker()
+    return np.array([' '.join([spell.correction(s) for s in string.split()]) for string in arr])
 
+def add_awards(arr):
+    ret = []
+    for a in arr:
+        x = re.search('(?!supporting role)(?<=in a ).*',a)
+        if x: ret.append('best ' + x.group(0))
+    return np.append(np.array(ret), arr)
 
 def remove_if_subset(strs):
     ret = []
@@ -73,7 +53,9 @@ def remove_if_subset(strs):
         for s2 in strs:
             if s2!=s:
                 s2_split = multi_sub([["[\/.,-]", ' '],["[^\w\s]+", '']], s2)
-                if all(sub in s2_split or sub=='or' for sub in substr) and len(s2_split)-len(substr)<=3:
+                if (all(sub in s2_split or sub=='or' for sub in substr) or s in s2) and \
+                        len(s2_split)-len(substr)<=3: #and \
+                            #(('supporting' not in s2_split) or ('supporting' in s2_split and 'supporting' in substr)):
                     incl = False
                     break
         if incl: 
@@ -88,7 +70,7 @@ def multi_sub(pairs, s):
         new_s = re.sub(p[0], p[1], new_s)
     return new_s.split()
 
-# TODO: replace 'show' with 'series'
+# TODO: replace 'show' with 'series' 
 #       replace 'movie' with 'motion picture'
 #       just 'series' -> 'television series'
 #       just 'television' -> 'television series'
@@ -102,6 +84,10 @@ def award_process(award):
     award = re.sub('movie','motion picture',award)
     if 'series' in award and 'television' not in award:
         award = re.sub('series', 'television series', award)
+    if 'television' in award and 'series' not in award:
+        award = re.sub('television', 'television series', award)
+    award = re.sub('minitelevision', 'mini-series television', award)
+    award = re.sub('miniseries', 'mini-series', award)
     return award
 
 def fuzzyRatio(cg, rat, lessThan=True):
@@ -113,14 +99,51 @@ def fuzzyRatio(cg, rat, lessThan=True):
                 if lessThan:
                     if len(c)<len(other):
                         d[c] += 1
-                    else: d[other] +=1
+                    else: d[other] += 1
                 else:
                     if len(c)>len(other):
                         d[c] += 1
-                    else: d[other] +=1
+                    else: d[other] += 1
+            
+            # if all(sub in multi_sub([["[\/.,-]", ' '],["[^\w\s]+", '']], c) for sub in multi_sub([["[\/.,-]", ' '],["[^\w\s]+", '']], other)):
+            #     d[c]+=1
+            # if all(sub in multi_sub([["[\/.,-]", ' '],["[^\w\s]+", '']], other) for sub in multi_sub([["[\/.,-]", ' '],["[^\w\s]+", '']], c)):
+            #     d[other]+=1
+
+            # subst = remove_if_subset([c,other])
+            # if len(subst) != 0:
+            #     if c in subst: d[c]+=1
+            #     if other in subst: d[other]+=1
+            # else:
+            #     d[c]+=1
+            #     d[other]+=1
+            # if len(remove_if_subset([c,other])) in [0,1] and c!=other:
+            #     # print(f'c:{c}\tother:{other}')
+            #     d[c]+=1
+            #     d[other]+=1
     return d
 
-res = get_awards2("2015")
+res = get_awards("2015")
+
+# test = np.array(['best animated feature', 'best motion picture drama',
+#  'best performance by an actor in a minitelevision series',
+#  'best performance by an actor in a supporting role in a miniseries or television motion picture',
+#  'best performance by an actor in a supporting role in a television series',
+#  'best performance by an actor in a television series comedy/musical',
+#  'best performance by an actress in a mini-television series',
+#  'best performance by an actress in a motion picture comedy/musical',
+#  'best performance by an actress in a motion picture drama',
+#  'best performance by an actress in a supporting role in a television series, miniseries or motion picture',
+#  'best performance by an actress in a television drama',
+#  'best performance by an actress in a television series comedy/musical',
+#  'best performance by an actress in minitelevision series',
+#  'best performance by an actress mini-series, television motion picture',
+#  'best screenplay, motion picture' 'best television series comedy/musical',
+#  'best television series dram'])
+# for a in test:
+#     x = re.search('(?!supporting role)(?<=in a ).*',a)
+#     if x: print(x.group(0))
+
 # s = ['best performance by an actress in a television drama','best performance by an actress--television drama']
 # ret = remove_if_subset(s)
 # print(ret)
