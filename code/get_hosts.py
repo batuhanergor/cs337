@@ -18,7 +18,7 @@ def get_hosts(year):
     cg = filter_tweets(cg, ["Golden Globes"], exclude=True, _or=True)
     values, counts = np.unique(cg, return_counts=True)
     nh = num_hosts(np.sort(counts))
-    return np.sort(lowercase_array(values[np.argsort(counts)][-nh:]))
+    return np.sort(np.char.lower(values[np.argsort(counts)][-nh:]))
 
 def get_hosts2(year):
     tweets = load_tweets(f'../data/gg{year}.json')
@@ -28,7 +28,7 @@ def get_hosts2(year):
     cg = np.array(clean2(cg, ['RT', '@', 'Golden', 'Globe', 'Award', '#']))
     values, counts = np.unique(cg, return_counts=True)
     nh = num_hosts(np.sort(counts))
-    return np.sort(lowercase_array(values[np.argsort(counts)][-nh:]))
+    return np.sort(np.char.lower(values[np.argsort(counts)][-nh:]))
 
 print(f'Answers: {load_answers("../data/gg2015answers.json")["hosts"]}')
 t = time.time()

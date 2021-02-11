@@ -71,3 +71,24 @@ best performance by an actor in a television series - drama
 
 
 best performance by an actor in a television series - comedy or musical
+
+
+
+
+Getting most discussed...
+Most Discussed:
+1. Anne Hathaway
+2. Adele
+3. Kate Hudson
+4. Jon Bon Jovi
+5. Burberry
+Got most discussed in 7.037023067474365 seconds.
+
+Getting most discussed...
+Most Discussed:
+1. Lana Del Rey
+2. Kerry Washington
+3. Olivia Pope Hdisjsja…
+4. Lanadelrey
+5. Jennifer Aniston
+Got most discussed in 417.68696904182434 seconds.

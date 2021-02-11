@@ -14,7 +14,7 @@ def load_answers(filename):
         that our code will be checked against.
     '''
     with open(filename) as f: data = json.load(f)
-    hosts = data["hosts"]
+    hosts = data['hosts']
     award_data = data['award_data']
     awards = list(award_data.keys())
     rest = [{k: award_data[k][key] for k in awards} for key in ['nominees','presenters','winner']]
