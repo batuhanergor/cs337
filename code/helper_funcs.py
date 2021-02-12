@@ -85,11 +85,11 @@ def match_subsets(input_dict):
         to_add = True
         value_to_add = sorted_dict[key]
         for key2 in to_return.keys():
-            if key2.replace(' ','') in key.replace(' ','') and (sorted_dict[key]/total > 0.10 or (sorted_dict[key] > 100 and sorted_dict[key]/total > 0.05)):
+            if key2.replace(' ', '').lower() in key.replace(' ', '').lower() and (sorted_dict[key]/total > 0.10 or (sorted_dict[key] > 100 and sorted_dict[key]/total > 0.05)):
                 # and sorted_dict[key] > 3:
                 value_to_add += sorted_dict[key2]
                 to_remove.append(key2)
-            elif key.replace(' ','') in key2.replace(' ',''):
+            elif key.replace(' ', '').lower() in key2.replace(' ', '').lower():
                 to_return[key2] += sorted_dict[key]
                 to_add = False
         if to_add:
@@ -109,18 +109,17 @@ def get_consecutive_pos(tweets, pos):
             # if len(word) > 0 and word[0] == '"':
             #    to_return.append(word.replace('"', ''))
             #    tweet.replace(word, '')
-        tweet.replace('!', '').replace(
-            '*', '').replace('"', '').replace("'", '')
+        # tweet_cleaned = tweet.replace('!', '').replace(
+        #    '*', '').replace('"', '').replace("'", '')
         tweet_cleaned = tweet
         poss = nltk.pos_tag(nltk.word_tokenize(tweet_cleaned))
         consecutive_poss = []
         temp = []
         for entry in poss:
             if entry[0] == ')':
-                consecutive_poss = []
                 temp = []
                 continue
-            if entry[1] == pos:
+            elif entry[1] == pos:
                 temp.append(entry[0])
             else:
                 if temp != []:
@@ -306,4 +305,17 @@ def handle_handles(input_list):
                 if len(term) > 0 and term[0] == '@':
                     to_return.append(
                         ' '.join(re.findall('[A-Z][^A-Z]*', term.strip(' @_*&^%$!'))))
+    return(to_return)
+
+def presenter_cleaner(input_list):
+    to_return = []
+    for entry in input_list:
+        to_include = True
+        for term in ['wow','best','actor','acress','performane','movie','motion','picture','drama','score','director','win','haha','jaja',
+        'mr','mister','mrs','miss','ambassad','president','nope','news']:
+            if term in entry.lower():#.split(' '):
+                to_include = False
+                break
+        if to_include:
+            to_return.append(entry)
     return(to_return)
