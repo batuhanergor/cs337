@@ -36,7 +36,7 @@ def presenter_experimenting(tweets, award, regex_pairs):
             return(None)
         counter += 1
 
-        sub_len = min(max(prev_sub_len - counter, 2), 5)
+        sub_len = min(max(prev_sub_len - counter, 2), 4)
         prev_sub_len = sub_len
 
         terms_to_use = [list(x) for x in get_combinations(

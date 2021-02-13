@@ -7,74 +7,47 @@ import itertools
 nltk.download('averaged_perceptron_tagger')
 nltk.download('punkt')
 
-
-def keyword_filter(df, keywords=[], method='or'):
-    df = pd.DataFrame(data={'text': df})
-    to_return = pd.DataFrame([])
-    if method == 'or':
-        for keyword in keywords:
-            to_return = to_return.append(df[df['text'].str.lower(
-            ).str.contains(keyword)])
-    if method == 'and':
-        to_return = df.copy(deep=True)
-        for keyword in keywords:
-            to_return = to_return[to_return['text'].str.lower(
-            ).str.contains(keyword)]
-    return(to_return)
-
-
-def regex_filter(tweets, start, end):
-    to_return = []
-    for tweet in tweets:
-        x = re.search(fr'{start}(.*?){end}', tweet.lower())
-        if x:
-            to_return.append(x)
-
-
-def leave_one_out(input_list):
-    subsets = []
-    for i in range(len(input_list)):
-        subsets.append(input_list[:i] + input_list[i+1:])
-    return(subsets)
-
-
+# returns combinations of given input list with specified number of elements
 def get_combinations(input_list, n):
     return(itertools.combinations(input_list, n))
 
-
-def remove_part_of_tweet(tweets, to_exclude):
-    df = pd.DataFrame(data={'text': tweets})
-    for phrase in to_exclude:
-        df['text'] = df['text'].str.replace(phrase, '')
-    return(np.array(df['text']))
-
-
+# takes an input dictionary and desired threshold and combines similar elements and counts in the dictionary that have a similarity above the threshold
 def levenshtein_dict(input_dict, thresh):
     to_return = {}
+    # sort the input dict to give precedence to elements that occur most
     sorted_dict = {k: v for k, v in sorted(
         input_dict.items(), key=lambda item: item[1], reverse=True)}
+    # for element in the sorted dict
     for key in sorted_dict:
         to_add = True
+        # for already added terms
         for key2 in to_return.keys():
+            # if the element we're looking at is greater than thresh in similarity
             if Levenshtein.ratio(key2.lower(), key.lower()) > thresh:
+                # add to the already added counts and do not add the element
                 to_return[key2] += sorted_dict[key]
                 to_add = False
+        # if not match any element, add to return list
         if to_add:
             to_return[key] = sorted_dict[key]
+    # return resorted dict
     return({k: v for k, v in sorted(
         to_return.items(), key=lambda item: item[1], reverse=True)})
 
-
+# splits given inputs on desired term and return desired element
 def split_on(input_list, term, index_to_take):
     to_return = []
+    # for each input in the input list
     for x in input_list:
+        # if desired term to split, split and take desired index of split
         if term.lower() in x.lower():
             to_return.append(x.split(term)[index_to_take])
+        # otherwise add the entire input
         else:
             to_return.append(x)
     return(to_return)
 
-
+# match subsets of terms in input dict and count both towards total
 def match_subsets(input_dict):
     to_return = {}
     to_remove = []
@@ -86,7 +59,6 @@ def match_subsets(input_dict):
         value_to_add = sorted_dict[key]
         for key2 in to_return.keys():
             if key2.replace(' ', '').lower() in key.replace(' ', '').lower() and (sorted_dict[key]/total > 0.10 or (sorted_dict[key] > 100 and sorted_dict[key]/total > 0.05)):
-                # and sorted_dict[key] > 3:
                 value_to_add += sorted_dict[key2]
                 to_remove.append(key2)
             elif key.replace(' ', '').lower() in key2.replace(' ', '').lower():
@@ -101,16 +73,10 @@ def match_subsets(input_dict):
         to_return.items(), key=lambda item: item[1], reverse=True)}, {k: v/total for k, v in sorted(
             to_return.items(), key=lambda item: item[1], reverse=True)})
 
-
+# return consecutive parts of speech for desired POS
 def get_consecutive_pos(tweets, pos):
     to_return = []
     for tweet in tweets:
-        # for word in tweet.split(' '):
-            # if len(word) > 0 and word[0] == '"':
-            #    to_return.append(word.replace('"', ''))
-            #    tweet.replace(word, '')
-        # tweet_cleaned = tweet.replace('!', '').replace(
-        #    '*', '').replace('"', '').replace("'", '')
         tweet_cleaned = tweet
         poss = nltk.pos_tag(nltk.word_tokenize(tweet_cleaned))
         consecutive_poss = []
@@ -130,7 +96,7 @@ def get_consecutive_pos(tweets, pos):
         to_return.extend(consecutive_poss)
     return(to_return)
 
-
+# return specific index after matching regex groups
 def groups_around_regex(tweets, regex, position_to_take):
     winners = []
     for tweet in tweets:
@@ -139,7 +105,7 @@ def groups_around_regex(tweets, regex, position_to_take):
             winners.append(m.groups()[position_to_take])
     return(winners)
 
-
+# clean by removing elements in to_clean
 def clean(inputs, to_clean):
     to_return = []
     for phrase in inputs:
@@ -151,7 +117,7 @@ def clean(inputs, to_clean):
             to_return.append(phrase)
     return(to_return)
 
-
+# filter out award name from inputs
 def exclude_award_name(inputs, award):
     to_return = []
     for phrase in inputs:
@@ -159,7 +125,7 @@ def exclude_award_name(inputs, award):
             to_return.append(phrase)
     return(to_return)
 
-
+# require or remove terms based on type of award recipient
 def clean_based_on_award_recipient(tweets, award_name):
     df = pd.DataFrame(data={'text': tweets})
     if 'actor' in award_name.lower():
@@ -186,7 +152,7 @@ def clean_based_on_award_recipient(tweets, award_name):
         df = df[~df['text'].str.lower().str.contains('score')]
     return(df['text'])
 
-
+# require or remove terms based on type of award recipient (used in different context)
 def clean_based_on_award_recipient2(award_pos, award_name):
     to_return = award_pos
     if 'actor' in award_name.lower():
@@ -203,7 +169,7 @@ def clean_based_on_award_recipient2(award_pos, award_name):
         pass
     return(to_return)
 
-
+# require or remove terms based on type of award
 def clean_based_on_award_subject(tweets, award_name):
     df = pd.DataFrame(data={'text': tweets})
     if 'motion picture' in award_name.lower():
@@ -232,7 +198,7 @@ def clean_based_on_award_subject(tweets, award_name):
         df = df[df['text'].str.lower().str.contains('supporting')]
     return(df['text'])
 
-
+# require or remove terms based on type of award (used in different context)
 def clean_based_on_award_subject2(award_pos, award_name):
     to_return = award_pos
     if 'motion picture' in award_name.lower():
@@ -246,7 +212,7 @@ def clean_based_on_award_subject2(award_pos, award_name):
         pass
     return(to_return)
 
-
+# specific filtering for awards that are made for tv
 def made_for_tv(tweets, award):
     df = pd.DataFrame(data={'text': tweets})
     if 'made for television' in award.lower():
@@ -254,29 +220,7 @@ def made_for_tv(tweets, award):
                  ((df['text'].str.lower().str.contains('for tv')))) & (~df['text'].str.contains('motion picture'))]
     return(df['text'])
 
-
-def check_answer(answers, award, category, value):
-    return(value.lower() == answers[award][category].lower())
-
-
-def get_pos(df, pos):
-    to_return = []
-    for _, row in df.iterrows():
-        tags = nltk.pos_tag(nltk.word_tokenize(
-            re.sub('[^A-Za-z ]+', '', row['text'])))
-        proper_nouns = [x[0] for x in tags if x[1] == pos and x[0].lower() not in (
-            ['golden', 'globes', 'goldenglobes', 'rt'])]
-        to_return.extend(proper_nouns)
-    return(to_return)
-
-
-def get_top_k(input_list, k):
-    elements, counts = np.unique(input_list, return_counts=True)
-    zipped = list(zip(elements, counts))
-    ordered = sorted(zipped, key=lambda x: x[1], reverse=True)
-    return(ordered[:k])
-
-
+# returns hashtags separated by capitals
 def handle_hashtags(input_list):
     to_return = []
     for entry in input_list:
@@ -287,7 +231,7 @@ def handle_hashtags(input_list):
                     ' '.join(re.findall('[A-Z0-9][^A-Z]*', term[1:])))
     return(to_return)
 
-
+# returns twitter handles separated by capitals
 def handle_handles(input_list):
     to_return = []
     for entry in input_list:
@@ -307,6 +251,7 @@ def handle_handles(input_list):
                         ' '.join(re.findall('[A-Z][^A-Z]*', term.strip(' @_*&^%$!'))))
     return(to_return)
 
+# specific cleaner for removing key terms from presenter candidates
 def presenter_cleaner(input_list):
     to_return = []
     for entry in input_list:
@@ -319,3 +264,61 @@ def presenter_cleaner(input_list):
         if to_include:
             to_return.append(entry)
     return(to_return)
+
+#Unused Helpers
+"""
+
+def keyword_filter(df, keywords=[], method='or'):
+    df = pd.DataFrame(data={'text': df})
+    to_return = pd.DataFrame([])
+    if method == 'or':
+        for keyword in keywords:
+            to_return = to_return.append(df[df['text'].str.lower(
+            ).str.contains(keyword)])
+    if method == 'and':
+        to_return = df.copy(deep=True)
+        for keyword in keywords:
+            to_return = to_return[to_return['text'].str.lower(
+            ).str.contains(keyword)]
+    return(to_return)
+
+def regex_filter(tweets, start, end):
+    to_return = []
+    for tweet in tweets:
+        x = re.search(fr'{start}(.*?){end}', tweet.lower())
+        if x:
+            to_return.append(x)
+
+def leave_one_out(input_list):
+    subsets = []
+    for i in range(len(input_list)):
+        subsets.append(input_list[:i] + input_list[i+1:])
+    return(subsets)
+
+
+def remove_part_of_tweet(tweets, to_exclude):
+    df = pd.DataFrame(data={'text': tweets})
+    for phrase in to_exclude:
+        df['text'] = df['text'].str.replace(phrase, '')
+    return(np.array(df['text']))
+
+def check_answer(answers, award, category, value):
+    return(value.lower() == answers[award][category].lower())
+
+
+def get_pos(df, pos):
+    to_return = []
+    for _, row in df.iterrows():
+        tags = nltk.pos_tag(nltk.word_tokenize(
+            re.sub('[^A-Za-z ]+', '', row['text'])))
+        proper_nouns = [x[0] for x in tags if x[1] == pos and x[0].lower() not in (
+            ['golden', 'globes', 'goldenglobes', 'rt'])]
+        to_return.extend(proper_nouns)
+    return(to_return)
+
+def get_top_k(input_list, k):
+    elements, counts = np.unique(input_list, return_counts=True)
+    zipped = list(zip(elements, counts))
+    ordered = sorted(zipped, key=lambda x: x[1], reverse=True)
+    return(ordered[:k])
+"""
