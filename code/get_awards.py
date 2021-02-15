@@ -8,7 +8,6 @@ import nltk
 from spellchecker import SpellChecker
 import time
 
-
 def get_awards(year):
     tweets = load_tweets(f'../data/gg{year}.json')
     # 2015: 1754153 
@@ -137,17 +136,3 @@ def fuzzyRatio(cg, rat, lessThan=True):
             if all(sub in multi_sub([["[\/.,-]", ' '],["[^\w\s]+", '']], other) for sub in multi_sub([["[\/.,-]", ' '],["[^\w\s]+", '']], c)):
                 d[other]+=1
     return d
-
-t = time.time()
-print('2015:')
-res = get_awards("2015")
-print(res)
-print(len(res))
-print(time.time() - t)
-
-t = time.time()
-print('2013')
-res = get_awards("2013")
-print(res)
-print(len(res))
-print(time.time() - t)
