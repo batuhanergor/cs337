@@ -3,6 +3,7 @@ import pandas as pd
 import re
 import Levenshtein
 import nltk
+
 import itertools
 nltk.download('averaged_perceptron_tagger')
 nltk.download('punkt')
@@ -104,26 +105,14 @@ def groups_around_regex(tweets, regex, position_to_take):
         if m:
             winners.append(m.groups()[position_to_take])
     return(winners)
+  
+def exclude_award_name(inputs, award):
+    return [phrase for phrase in inputs if phrase.lower() not in award.lower()]
 
 # clean by removing elements in to_clean
-def clean(inputs, to_clean):
-    to_return = []
-    for phrase in inputs:
-        keep = True
-        for item in to_clean:
-            if item in phrase:
-                keep = False
-        if keep:
-            to_return.append(phrase)
-    return(to_return)
-
 # filter out award name from inputs
-def exclude_award_name(inputs, award):
-    to_return = []
-    for phrase in inputs:
-        if phrase.lower() not in award.lower():
-            to_return.append(phrase)
-    return(to_return)
+def clean(inputs, to_clean):
+    return [phrase for phrase in inputs if not any(item in phrase for item in to_clean)]
 
 # require or remove terms based on type of award recipient
 def clean_based_on_award_recipient(tweets, award_name):
