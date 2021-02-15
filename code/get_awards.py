@@ -1,14 +1,11 @@
-from filter_tweets import filter_tweets, capture_groups, lowercase_array
-from helper_funcs import clean2, get_consecutive_pos
-from load_tweets_and_answers import load_tweets, load_answers
+from filter_tweets import filter_tweets, capture_groups
+from load_tweets_and_answers import load_tweets
 import numpy as np
 import re
 from fuzzywuzzy import fuzz
-import nltk
 from spellchecker import SpellChecker
-import time
 
-def get_awards(year):
+def awards_get(year):
     tweets = load_tweets(f'../data/gg{year}.json')
     # 2015: 1754153 
     # 2013: 0174643
