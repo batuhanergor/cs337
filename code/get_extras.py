@@ -1,12 +1,8 @@
-from filter_tweets import filter_tweets, capture_groups
+from filter_tweets import filter_tweets
 from helper_funcs import get_consecutive_pos, clean2
-from load_tweets_and_answers import load_tweets, load_answers
+from load_tweets_and_answers import load_tweets
 import numpy as np
 import re
-import nltk
-import pandas as pd
-from textblob import TextBlob
-import time
     
 def best_dressed(tweets):
     best_dressed = filter_tweets(tweets, ['(?i)best dressed'])
@@ -56,9 +52,3 @@ def remove_emojis(text):
         u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
                            "]+", flags = re.UNICODE)
     return regrex_pattern.sub(r'',text)
-
-def extras(year):
-    tweets = load_tweets(f'../data/gg{year}.json')
-    best_dressed(tweets)
-    worst_dressed(tweets)
-    most_discussed(tweets)
