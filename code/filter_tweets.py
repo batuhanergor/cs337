@@ -26,7 +26,7 @@ def capture_groups(tweets, pat):
     ''' 
         Returns a numpy array of the capture groups
         in each tweet using a pattern.
-        **CASE-SENSITVE**
+        **CASE-SENSITVE UNLESS REGEX SPECIFIED TO NOT BE: (?i)**
     '''
     return np.concatenate([np.array(re.findall(pat, x)).flatten() for x in tweets]).flatten()
 

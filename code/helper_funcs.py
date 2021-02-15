@@ -3,8 +3,8 @@ import pandas as pd
 import re
 import Levenshtein
 import nltk
-nltk.download('averaged_perceptron_tagger')
-nltk.download('punkt')
+# nltk.download('averaged_perceptron_tagger')
+# nltk.download('punkt')
 
 
 def regex_filter(tweets, start, end):
