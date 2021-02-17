@@ -1,5 +1,6 @@
 from filter_tweets import filter_tweets, capture_groups
 from load_tweets_and_answers import load_tweets
+from helper_funcs import clean
 import numpy as np
 import re
 from fuzzywuzzy import fuzz
@@ -23,6 +24,11 @@ def awards_get(year):
         ret = np.array([k for k,v in fuzzy_dict.items() if v>(round(max(fuzzy_dict.values()))*0.2)])
     else: 
         ret = np.array([k for k,v in fuzzy_dict.items()])
+    ret = clean_award_names(ret)
+    unique = np.unique(ret)
+    return unique
+
+def clean_award_names(ret):
     ret = spell_checker(ret)
     ret = filter_tweets(ret, ['(?i)(season|that|so|featured|were|pick|school|both|categories|definitely|neck|go)'], exclude=True, _or=True)
     ret = split_take_first(ret, ' camp')
@@ -32,8 +38,57 @@ def awards_get(year):
     ret = remove_if_subset(ret)
     ret = remove_if_all_in(ret)
     ret = np.array(list(map(lambda s: award_process(s), ret)))
-    unique = np.unique(ret)
-    return unique
+    ret = np.array([s for s in ret if len(re.findall('(?i) or ', s))<2])
+    ret = add_actor_or_actress(ret)
+    ret = add_drama_or_comedy(ret)
+    ret = np.array(clean(ret, ['new', 'in drama', 'in comedy', 'in a drama', 'in a comedy','hollywood']))
+    ret = motion_picture_film(ret)
+    ret = np.array([s for s in ret if not s.endswith('role') and not s.endswith('actor') and not s.endswith('actress') and not s.endswith('i')])
+    ret = remove_if_subset2(ret)
+    return ret
+
+def motion_picture_film(arr):
+    arr = np.array([s for s in arr if not re.search('film',s) or re.sub('film', 'motion picture', s) not in arr])
+    ret = []
+    for s in arr:
+        if re.search('film', s) and not (re.search('animated', s) or re.search('foreign', s)):
+            s = re.sub('film','motion picture',s)
+        ret.append(s)
+    return np.array(ret)
+
+def remove_if_subset2(arr):
+    ret = []
+    for s in arr:
+        add = True
+        for s2 in arr:
+            if s!=s2:
+                if all(sub in s2.split() and s.count(sub)<=s2.count(sub) for sub in s.split()) and \
+                    ((not re.search('supporting', s2)) or (re.search('supporting', s) and re.search('supporting', s2))) and \
+                        len(s2)-len(s)<5:
+                    add = False
+                    break
+        if add: ret.append(s)
+    return np.array(ret)
+
+def add_actor_or_actress(arr):
+    ret = []
+    for s in arr:
+        if re.search('(?i)actress', s) and re.sub('(?i)actress', 'actor', s) not in arr:
+            ret.append(re.sub('(?i)actress', 'actor', s))
+        if re.search('(?i)actor', s) and re.sub('(?i)actor', 'actress', s) not in arr:
+            ret.append(re.sub('(?i)actor', 'actress', s))
+        ret.append(s)
+    return np.array(ret)
+
+def add_drama_or_comedy(arr):
+    ret = []
+    for s in arr:
+        if re.search('(?i)drama', s) and re.sub('(?i)drama', 'comedy or musical', s) not in arr:
+            ret.append(re.sub('(?i)drama', 'comedy or musical', s))
+        if re.search('(?i)comedy or musical', s) and re.sub('(?i)comedy or musical', 'drama', s) not in arr:
+            ret.append(re.sub('(?i)comedy or musical', 'drama', s))
+        ret.append(s)
+    return np.array(ret)
 
 def split_take_first(arr, string):
     return np.array([a.split(string)[0] for a in arr])
@@ -61,7 +116,7 @@ def remove_if_subset(strs):
             if s2!=s:
                 s2_split = multi_sub([["[\/.,-]", ' '],["[^\w\s]+", '']], s2)
                 if (all(sub in s2_split or sub=='or' for sub in substr) or s in s2) and \
-                        len(s2_split)-len(substr)<=3 and\
+                        len(s2_split)-len(substr)<5 and\
                             (('supporting' not in s2_split) or ('supporting' in s2_split and 'supporting' in substr)):
                     incl = False
                     break
@@ -106,11 +161,17 @@ def award_process(award):
     if 'television' in award and 'series' not in award:
         award = re.sub('television', 'television series', award)
     award = re.sub('minitelevision', 'mini-series television', award)
+    award = re.sub('mini-television series', 'mini-series television', award)
     award = re.sub('miniseries', 'mini-series', award)
+    award = re.sub('mini series', 'mini-series', award)
     if re.search('(?i)(comedy|comedic)', award) and not re.search('(?i)musical', award):
         award = re.sub('(?i)(comedy|comedic)', 'comedy or musical', award)
     if not re.search('(?i)(comedy|comedic)', award) and re.search('(?i)musical', award):
         award = re.sub('(?i)(musical)', 'comedy or musical', award)
+    if re.search('(?i)comedy/musical', award) or re.search('(?i)musical/comedy', award):
+        award = re.sub('(?i)comedy/musical', 'comedy or musical', award)
+    if re.search('(?i)mini-series/television', award):
+        award = re.sub('(?i)mini-series/television', 'mini-series or television', award)
     return award
 
 def fuzzyRatio(cg, rat, lessThan=True):
@@ -133,3 +194,8 @@ def fuzzyRatio(cg, rat, lessThan=True):
             if all(sub in multi_sub([["[\/.,-]", ' '],["[^\w\s]+", '']], other) for sub in multi_sub([["[\/.,-]", ' '],["[^\w\s]+", '']], c)):
                 d[other]+=1
     return d
+
+# a = awards_get('2013')
+# print(a, len(a))
+# b = awards_get('2015')
+# print(b, len(b))
