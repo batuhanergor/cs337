@@ -19,7 +19,8 @@ How to run:
 	python gg_api.py
 2. This will call the pre_ceremony() function, followed by main()
 	- pre_ceremony() runs get_winner() for each available year,
-	  writing the winners to a respective json file
+	  writing the winners to a respective json file (if it does
+	  not already exist)
  	- this is because get_presenters() makes use of the winners to
 	  remove winners from the list of possible presenters. 
 	  get_presenters() often returns the winner rather than the
