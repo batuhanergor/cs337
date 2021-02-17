@@ -10,13 +10,13 @@ How to install dependencies:
 	- create a new environment
 		python3.6 -m venv virtualenv
 	- activate your virtual environment
-		. virtualenv/bin/activate
+		source virtualenv/bin/activate
 	- install dependencies
 		pip install -r requirements.txt
 
 How to run:
 1. Run the gg_api.py script
-	python gg_api.py
+	python code/gg_api.py
 2. This will call the pre_ceremony() function, followed by main()
 	- pre_ceremony() runs get_winner() for each available year,
 	  writing the winners to a respective json file (if it does
