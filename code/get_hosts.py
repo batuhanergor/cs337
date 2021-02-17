@@ -1,4 +1,4 @@
-from filter_tweets import filter_tweets, capture_groups, lowercase_array
+from filter_tweets import filter_tweets, capture_groups
 from helper_funcs import get_consecutive_pos,clean
 from load_tweets_and_answers import load_tweets, load_answers
 import numpy as np
