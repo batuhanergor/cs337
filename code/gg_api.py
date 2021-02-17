@@ -67,6 +67,7 @@ def pre_ceremony():
     # so get winners for use in finalize_presenters fcn (called in get_presenters), 
     # which takes care of that issue
     for year in ['2013','2015','2018','2019']:
+        print(f'\nStarting pre-ceremony processing...')
         if path.exists(f"../data/gg{year}.json") and not path.exists(f"../data/winners{year}.json"):
             winners = get_winner(year)
             with open(f"../data/winners{year}.json", "w") as f:  
@@ -124,9 +125,9 @@ def main():
         for k, v in json.items():
             print(f'Award: {" ".join(w.capitalize() for w in k.split())}')
             print(f'Closest scraped award: {" ".join(w.capitalize() for w in awards[np.argmin([edit_distance(k.lower(), a.lower()) for a in awards])].split())}')
-            print(f'Presenters: {", ".join([" ".join(w.capitalize() for w in x.split()) for x in v["Presenters"]]) if v["Presenters"] else "Not found."}')
-            print(f'Nominees: {", ".join([" ".join(w.capitalize() for w in x.split()) for x in v["Nominees"]]) if v["Nominees"] else "Not found."}')
-            print(f'Winner: {" ".join(w.capitalize() for w in v["Winner"].split()) if v["Winner"] else "Not found."}\n')
+            print(f'Presenters: {", ".join([" ".join(w.capitalize() for w in x.split()) for x in v["Presenters"]]) if v["Presenters"] else "Not found"}')
+            print(f'Nominees: {", ".join([" ".join(w.capitalize() for w in x.split()) for x in v["Nominees"]]) if v["Nominees"] else "Not found"}')
+            print(f'Winner: {" ".join(w.capitalize() for w in v["Winner"].split()) if v["Winner"] else "Not found"}\n')
         
         print(f'Best Dressed: {" ".join(w.capitalize() for w in bd.split())}')
         print(f'Worst Dressed: {" ".join(w.capitalize() for w in wd.split())}')
