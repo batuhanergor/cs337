@@ -17,8 +17,10 @@ How to install dependencies:
 How to run:
 1. Place any json data files in the 'data' directory.
 	- they should be of the form 'gg{year}.json'
+2. cd into the code directory
+	cd code
 2. Run the gg_api.py script
-	python code/gg_api.py
+	python gg_api.py
 3. This will call the pre_ceremony() function, followed by main()
 	- pre_ceremony() runs get_winner() for each available year,
 	  writing the winners to a respective json file (if it does
