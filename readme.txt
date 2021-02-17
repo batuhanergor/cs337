@@ -15,9 +15,11 @@ How to install dependencies:
 		pip install -r requirements.txt
 
 How to run:
-1. Run the gg_api.py script
+1. Place any json data files in the 'data' directory.
+	- they should be of the form 'gg{year}.json'
+2. Run the gg_api.py script
 	python code/gg_api.py
-2. This will call the pre_ceremony() function, followed by main()
+3. This will call the pre_ceremony() function, followed by main()
 	- pre_ceremony() runs get_winner() for each available year,
 	  writing the winners to a respective json file (if it does
 	  not already exist)
