@@ -9,7 +9,9 @@ from master_helpers import get_winner_helper, get_presenters_helper
 from presenter_experimenting import presenter_experimenting
 
 
-def get_winners(award_names, tweets):
+def winner_get(award_names, year):
+
+    tweets = load_tweets(f'../data/gg{year}.json')
 
     # Use regex to filter the above tweets about the award to those that only mention a winner
     possible_winning_tweets = filter_tweets(
@@ -33,18 +35,19 @@ def get_winners(award_names, tweets):
 
         # winner is the candidate with most occurences
         try:
-            winner = winner_preds.keys()[0]
+            winner1 = list(winner.keys())[0]
         # if no candidates, no winner
         except Exception as e:
-            winner = None
+            winner1 = None
         # append winner to master list
-        to_return[award] = winner
+        to_return[award] = winner1
 
     # return master list
     return(to_return)
 
 
-def get_presenters(award_names, tweets):
+def presenters_get(award_names, year):
+    tweets = load_tweets(f'../data/gg{year}.json')
 
     # Use regex to filter the above tweets about the award to those that only mention a presenter
     possible_presenter_tweets = filter_tweets(
@@ -103,17 +106,19 @@ def finalize_presenters(winners, presenters):
     return(to_return)
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    OFFICIAL_AWARDS_1315 = ['cecil b. demille award', 'best motion picture - drama', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best performance by an actor in a motion picture - comedy or musical', 'best animated feature film', 'best foreign language film', 'best performance by an actress in a supporting role in a motion picture', 'best performance by an actor in a supporting role in a motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama',
-                            'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best television series - comedy or musical', 'best performance by an actress in a television series - comedy or musical', 'best performance by an actor in a television series - comedy or musical', 'best mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television']
+#     OFFICIAL_AWARDS_1315 = ['cecil b. demille award', 'best motion picture - drama', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best performance by an actor in a motion picture - comedy or musical', 'best animated feature film', 'best foreign language film', 'best performance by an actress in a supporting role in a motion picture', 'best performance by an actor in a supporting role in a motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama',
+#                             'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best television series - comedy or musical', 'best performance by an actress in a television series - comedy or musical', 'best performance by an actor in a television series - comedy or musical', 'best mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television']
 
-# read in the tweets
-tweets13 = load_tweets('data/gg2013.json')
-# get the predicted winners passing award names and tweets
-predicted_winners = get_winners(OFFICIAL_AWARDS_1315, tweets13)
-# get the initial predicted presenters
-predicted_presenters = get_presenters(OFFICIAL_AWARDS_1315, tweets13)
-# use winners to further filter the predicted presenters
-predicted_presenters2 = finalize_presenters(
-    predicted_winners, predicted_presenters)
+# # read in the tweets
+# tweets13 = load_tweets('../data/gg2013.json')
+# print(len(tweets13))
+# # get the predicted winners passing award names and tweets
+# predicted_winners = winner_get(OFFICIAL_AWARDS_1315, tweets13)
+# # get the initial predicted presenters
+# # predicted_presenters = get_presenters(OFFICIAL_AWARDS_1315, '2013')
+# # use winners to further filter the predicted presenters
+# # predicted_presenters2 = finalize_presenters(
+# #     predicted_winners, predicted_presenters)
+# print(predicted_winners)

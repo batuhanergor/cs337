@@ -96,6 +96,7 @@ def get_winner_helper(tweets, award, regex_pairs):
 
         # if only one candidate to return or if at least 25% split between top 2 candidates then return current dictionary
         if len(percent_dict.values()) < 2 or list(percent_dict.values())[0] / list(percent_dict.values())[1] >= 1.5:
+            # print(counts_dict)
             return(counts_dict)
         # otherwise, split on for to try to further isolate the real winner
         else:
@@ -122,6 +123,7 @@ def get_winner_helper(tweets, award, regex_pairs):
             counts_dict, percent_dict = match_subsets(match_fuzzies)
 
             # return a dictionary of candidates and counts
+            # print(counts_dict)
             # print(counts_dict)
             return(counts_dict)
 
