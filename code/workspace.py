@@ -38,7 +38,7 @@ def winner_get(award_names, year):
             winner1 = list(winner.keys())[0]
         # if no candidates, no winner
         except Exception as e:
-            winner1 = None
+            winner1 = ''#None
         # append winner to master list
         to_return[award] = winner1
 

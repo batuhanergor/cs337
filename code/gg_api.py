@@ -3,6 +3,7 @@ from get_hosts import hosts_get
 from get_awards import awards_get
 from get_extras import best_dressed, worst_dressed, most_discussed
 from workspace import winner_get, presenters_get, finalize_presenters
+from get_nominees import nominee_get
 from Levenshtein import distance as edit_distance
 import numpy as np
 import time
@@ -33,7 +34,7 @@ def get_nominees(year):
     the name of this function or what it returns.'''
     # Your code here
     actual_awards = OFFICIAL_AWARDS_1315 if year == '2013' or year == '2015' else OFFICIAL_AWARDS_1819
-    nominees = {k:['Nathan Timmerman'] for k in actual_awards}
+    nominees = nominee_get(actual_awards, year)
     return nominees
 
 def get_winner(year):
@@ -53,7 +54,8 @@ def get_presenters(year):
     with open(f'../data/winners{year}.json') as f: 
         winners = json.load(f)
     # winners = winner_get(OFFICIAL_AWARDS_1315 if year == '2013' or year == '2015' else OFFICIAL_AWARDS_1819, year)
-    presenters1 = presenters_get(OFFICIAL_AWARDS_1315 if year == '2013' or year == '2015' else OFFICIAL_AWARDS_1819, year)
+    actual_awards = OFFICIAL_AWARDS_1315 if year == '2013' or year == '2015' else OFFICIAL_AWARDS_1819
+    presenters1 = presenters_get(actual_awards, year)
     presenters = finalize_presenters(winners, presenters1)
     return presenters
 
@@ -66,8 +68,8 @@ def pre_ceremony():
     # get_presenters often returns the winner of the award as the presenter,
     # so get winners for use in finalize_presenters fcn (called in get_presenters), 
     # which takes care of that issue
+    print(f'\nStarting pre-ceremony processing...')
     for year in ['2013','2015','2018','2019']:
-        print(f'\nStarting pre-ceremony processing...')
         if path.exists(f"../data/gg{year}.json") and not path.exists(f"../data/winners{year}.json"):
             winners = get_winner(year)
             with open(f"../data/winners{year}.json", "w") as f:  

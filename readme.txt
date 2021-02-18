@@ -14,7 +14,7 @@ How to install dependencies:
 	- install dependencies
 		pip install -r requirements.txt
 
-How to run:
+How to run gg_api:
 1. Place any json data files in the 'data' directory.
 	- they should be of the form 'gg{year}.json'
 2. cd into the code directory
@@ -36,3 +36,13 @@ How to run:
           format
 	- the user can then select another year to view, or
 	  press 1 to quit
+
+How to run autograder.py:
+1. Place any json data files in the 'data' directory.
+	- they should be of the form 'gg{year}.json'
+2. Place any json answer files in the 'code' directory.
+	- they should be of the form 'gg{year}answers.json'
+3. cd into the code directory
+	cd code
+4. Run the autograder.py script with a year as an argument
+	python autograder.py [year]

@@ -503,7 +503,7 @@ def nominee_get(actual_awards, year):
                     final_nominee_result.append(count_dict_list[i])
             all_awards_and_nominees.append({award: final_nominee_result})
             continue
-    return(all_awards_and_nominees)
+    return {list(x.keys())[0]:list(x.values())[0] for x in all_awards_and_nominees}
 
 
 #OFFICIAL_AWARDS_1315 = ['cecil b. demille award', 'best motion picture - drama', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best performance by an actor in a motion picture - comedy or musical', 'best animated feature film', 'best foreign language film', 'best performance by an actress in a supporting role in a motion picture', 'best performance by an actor in a supporting role in a motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama',
