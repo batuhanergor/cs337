@@ -65,14 +65,19 @@ def levenshtein_dict(input_dict, thresh):
         to_return.items(), key=lambda item: item[1], reverse=True)})
 
 
+# return consecutive parts of speech for desired POS
 def get_consecutive_pos(tweets, pos):
     to_return = []
     for tweet in tweets:
-        poss = nltk.pos_tag(nltk.word_tokenize(tweet))
+        tweet_cleaned = tweet
+        poss = nltk.pos_tag(nltk.word_tokenize(tweet_cleaned))
         consecutive_poss = []
         temp = []
         for entry in poss:
-            if entry[1] == pos:
+            if entry[0] == ')':
+                temp = []
+                continue
+            elif entry[1] == pos:
                 temp.append(entry[0])
             else:
                 if temp != []:
@@ -82,6 +87,7 @@ def get_consecutive_pos(tweets, pos):
             consecutive_poss.append(' '.join(temp))
         to_return.extend(consecutive_poss)
     return(to_return)
+
 
 
 def groups_around_regex(tweets, regex, position_to_take):
@@ -112,7 +118,7 @@ def exclude_award_name(inputs, award):
             to_return.append(phrase)
     return(to_return)
 
-
+"""
 def clean_based_on_award(tweets, award_name):
     df = pd.DataFrame(data={'text': tweets})
     if 'actor' not in award_name.lower():
@@ -122,6 +128,33 @@ def clean_based_on_award(tweets, award_name):
     if 'director' not in award_name.lower():
         df = df[~df['text'].str.contains('director')]
     return(df['text'])
+"""
+def clean_based_on_award_recipient(tweets, award_name):
+    df = pd.DataFrame(data={'text': tweets})
+    if 'actor' in award_name.lower():
+        df = df[df['text'].str.lower().str.contains('actor')]
+    elif 'actress' in award_name.lower():
+        df = df[df['text'].str.lower().str.contains('actress')]
+    elif 'director' in award_name.lower():
+        df = df[df['text'].str.lower().str.contains('director')]
+    elif 'song' in award_name.lower():
+        df = df[df['text'].str.lower().str.contains('song')]
+    elif 'score' in award_name.lower():
+        df = df[df['text'].str.lower().str.contains('score')]
+    else:
+        pass
+    if 'actor' not in award_name.lower():
+        df = df[~df['text'].str.lower().str.contains('actor')]
+    if 'actress' not in award_name.lower():
+        df = df[~df['text'].str.lower().str.contains('actress')]
+    if 'director' not in award_name.lower():
+        df = df[~df['text'].str.lower().str.contains('director')]
+    if 'song' not in award_name.lower():
+        df = df[~df['text'].str.lower().str.contains('song')]
+    if 'score' not in award_name.lower():
+        df = df[~df['text'].str.lower().str.contains('score')]
+    return(df['text'])
+
 
 
 def check_answer(answers, award, category, value):
