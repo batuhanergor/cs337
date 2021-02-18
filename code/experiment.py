@@ -4,10 +4,10 @@ import os
 import re
 from load_tweets_and_answers import load_tweets, load_answers
 from filter_tweets import filter_tweets, capture_groups, lowercase_array
-from helper_funcs import regex_filter, remove_part_of_tweet, levenshtein_dict, get_consecutive_pos, clean, exclude_award_name, leave_one_out, check_answer, groups_around_regex, clean_based_on_award_recipient, get_combinations, clean_based_on_award_subject, match_subsets, clean_based_on_award_recipient2, clean_based_on_award_subject2, split_on, handle_hashtags, handle_handles, made_for_tv, presenter_cleaner
+from helper_funcs import regex_filter, remove_part_of_tweet, levenshtein_dict, get_consecutive_pos, clean, exclude_award_name, leave_one_out, check_answer, groups_around_regex, clean_based_on_award_recipient, get_combinations, clean_based_on_award_subject, match_subsets, clean_based_on_award_recipient2, clean_based_on_award_subject2, split_on, handle_hashtags, handle_handles, made_for_tv
 
 
-def get_winner_helper(tweets, award, regex_pairs):
+def experimenting(tweets, award, regex_pairs):
     # break down the award name into proper nouns and adjectives
     award_pos = get_consecutive_pos(
         [award], 'NN') + get_consecutive_pos([award], 'JJ') + get_consecutive_pos([award], 'VBN')

@@ -4,10 +4,10 @@ import os
 import re
 from load_tweets_and_answers import load_tweets, load_answers
 from filter_tweets import filter_tweets, capture_groups, lowercase_array
-from helper_funcs import regex_filter, remove_part_of_tweet, levenshtein_dict, get_consecutive_pos, clean, exclude_award_name, leave_one_out, check_answer, groups_around_regex, clean_based_on_award_recipient, get_combinations, clean_based_on_award_subject, match_subsets, clean_based_on_award_recipient2, clean_based_on_award_subject2, split_on, handle_hashtags, handle_handles, made_for_tv, presenter_cleaner
+from helper_funcs import regex_filter, remove_part_of_tweet, levenshtein_dict, get_consecutive_pos, clean, exclude_award_name, leave_one_out, check_answer, groups_around_regex, clean_based_on_award_recipient, get_combinations, clean_based_on_award_subject, match_subsets, clean_based_on_award_recipient2, clean_based_on_award_subject2, split_on, handle_hashtags, handle_handles, made_for_tv
 
 
-def get_winner_helper(tweets, award, regex_pairs):
+def experimenting(tweets, award, regex_pairs):
     # break down the award name into proper nouns and adjectives
     award_pos = get_consecutive_pos(
         [award], 'NN') + get_consecutive_pos([award], 'JJ') + get_consecutive_pos([award], 'VBN')
@@ -32,14 +32,15 @@ def get_winner_helper(tweets, award, regex_pairs):
     award_tweets = []
     prev_sub_len = len(award_pos_cleaned)
     while True:
-        # cap the iterations at 5 for time contraints
-        if counter == len(award_pos_cleaned) or counter == 5:
+        if counter == len(award_pos_cleaned):
             break
 
-        sub_len = min(max(prev_sub_len - counter, 2), 4)
+        sub_len = min(max(prev_sub_len - counter, 2), 5)
         prev_sub_len = sub_len
+
         terms_to_use = [list(x) for x in get_combinations(
             award_pos_cleaned, sub_len)]
+        #print('Subset Len: {sub_len}')
         cleaned_terms_to_search = clean_based_on_award_subject2(
             clean_based_on_award_recipient2(terms_to_use, award), award)
 
@@ -90,7 +91,7 @@ def get_winner_helper(tweets, award, regex_pairs):
         # print(potential_winners)
         # cleaning proper nouns candidates list with terms that can't be winners
         cleaned = clean(
-            potential_winners, ['RT', '@', 'Golden', 'Globe', 'Award', 'HBO', "'s"])
+            potential_winners, ['RT', '@', 'Golden', 'Globe', 'Award', 'HBO'])
         cleaned2 = exclude_award_name(cleaned, award)
 
         # get the frequency of counts for each nnp in the above list
@@ -102,7 +103,7 @@ def get_winner_helper(tweets, award, regex_pairs):
 
         # if only one candidate to return or if at least 25% split between top 2 candidates then return current dictionary
         if len(percent_dict.values()) < 2 or list(percent_dict.values())[0] / list(percent_dict.values())[1] >= 1.5:
-            return(counts_dict)
+            return(counts_dict, percent_dict, potential_winners, potential_winners, award_tweets, award_pos)
         # otherwise, split on for to try to further isolate the real winner
         else:
             # print(counts_dict)
@@ -117,7 +118,7 @@ def get_winner_helper(tweets, award, regex_pairs):
 
             # cleaning proper nouns candidates list
             cleaned = clean(
-                potential_winners, ['RT', '@', 'Golden', 'Globe', 'Award', "'s"])
+                potential_winners, ['RT', '@', 'Golden', 'Globe', 'Award'])
             cleaned2 = exclude_award_name(cleaned, award)
 
             # get the frequency of counts for each nnp in the above list
@@ -129,4 +130,4 @@ def get_winner_helper(tweets, award, regex_pairs):
 
             # return a dictionary of candidates and counts
             # print(counts_dict)
-            return(counts_dict)
+            return(counts_dict, percent_dict, potential_winners, potential_winners, award_tweets, award_pos)
