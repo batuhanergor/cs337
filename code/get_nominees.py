@@ -495,10 +495,10 @@ def nominee_get(actual_awards, year):
             count_dict_list = list(counts_dict.keys())
 
             final_nominee_result = []
-            if len(count_dict_list) < 4 and len(count_dict_list) > 1:
+            if len(count_dict_list) < 5 and len(count_dict_list) > 1:
                 for i in range(len(count_dict_list)):
                     final_nominee_result.append(count_dict_list[i])
-            if len(count_dict_list) >= 4:
+            if len(count_dict_list) >= 5:
                 for i in range(3):
                     final_nominee_result.append(count_dict_list[i])
             all_awards_and_nominees.append({award: final_nominee_result})
@@ -506,5 +506,4 @@ def nominee_get(actual_awards, year):
     return(all_awards_and_nominees)
 
 
-
-#print(nominee_get(2013))
+#print(nominee_get(OFFICIAL_AWARDS_1315, 2013))
