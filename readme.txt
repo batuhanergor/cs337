@@ -14,7 +14,7 @@ How to install dependencies:
 	- install dependencies
 		pip install -r requirements.txt
 
-How to run gg_api:
+How to run gg_api.py:
 1. Place any json data files in the 'data' directory.
 	- they should be of the form 'gg{year}.json'
 2. cd into the code directory
@@ -38,6 +38,9 @@ How to run gg_api:
 	  press 1 to quit
 
 How to run autograder.py:
+NOTE: gg_api.py must have been run before autograder.py
+      as the pre_ceremony() function must create the winner
+      json files
 1. Place any json data files in the 'data' directory.
 	- they should be of the form 'gg{year}.json'
 2. Place any json answer files in the 'code' directory.
