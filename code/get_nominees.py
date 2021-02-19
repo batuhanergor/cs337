@@ -1,11 +1,9 @@
-from filter_tweets import filter_tweets, capture_groups, lowercase_array
+from filter_tweets import filter_tweets
 from load_tweets_and_answers import load_tweets, load_answers
 import numpy as np
-import pandas as pd
-import os
 import re
 from helper_funcs import levenshtein_dict, get_consecutive_pos, clean
-import nltk
+#import nltk
 
 
 
@@ -325,8 +323,6 @@ def find_nominees_w_awards(tweets, reg_pat):
                 potential_nominees_phrases_up_for_phrases = potential_nominees_phrases_up_for_phrases + \
                                                             groups_around_regex(tweets, pair[0], pair[1])
     flat_list = []
-    exclude_these = ["golden", "globe", "globes", "best actor", "best actress", "motion picture", "television", "tv",
-                     "series"]
     for each_phrase in potential_nominees_phrases_up_for:
         for each_name in each_phrase:
             flat_list.append(each_name.lower())
@@ -347,89 +343,34 @@ def nominee_get(actual_awards, year):
     tweets = load_tweets(f'../data/gg{year}.json')
     # print(f'Answers: {list(load_answers("../data/gg2013answers.json")["nominees"])}')
 
-    all_best_tweets = filter_tweets(tweets, ["best"], _or=True)
-    all_best_tweets = filter_tweets(all_best_tweets,
-                                    ["won", "win(s|ning|ner|ners)", "present", "introduced", "(|isn\'t|is not|isn\'t even |is not even) nominated",
-                                     "should(\'ve a| have a| \'ve been| have been|) a nom(|inated|ination)",
-                                     "should(\'ve got(ten)|have got(ten)|\'ve got(ten) a|have got(ten) a|) nom(inated|ination)",
-                                     "did(n\'t get| not get |n\'t get a| not get a) no(m|minated|mination)",
-                                     "just won", "(isn\'t| is not| isn\'t a| is not a) no(minated|minee)", "goes to", "congrats", "congratulations"], exclude=True, _or=True)
-
+    best_tweets = filter_tweets(tweets, ["best"], _or=True)
 
     # find all potential nominees with "up for"
-    up_for_tweets = filter_tweets(all_best_tweets, ["up for best"], _or=True)
+    up_for_tweets = filter_tweets(best_tweets, ["up for best", "rooting for"], _or=True)
     # exclude negations
 
     nom_result_1 = find_nominees_w_awards(up_for_tweets, "([A-Z][\w-]*(?:\s+[A-Z][\w-]*)+)")
 
-    nom_for_tweets = filter_tweets(tweets, ["nominated for best"], _or=True)
+    nom_for_tweets = filter_tweets(best_tweets, ["nominated for best", "shoul(d\'ve|d have) wo(n|n for)"], _or=True)
     #print("nom_result_1: ", nom_result_1)
     # exclude negations
-    nom_for_tweets = filter_tweets(nom_for_tweets,["not nom(inating|ated)","not a nominee", "n(ot|n\t) get nominated", "not even nom(inating|ated|)", "is(n\'t| not|n\'t even | not even)",
+    nom_for_tweets = filter_tweets(nom_for_tweets,["not nom(inating|ated)","not a nominee", "n(ot|\'t) get nominated", "not even nom(inating|ated|)", "is(n\'t| not|n\'t even | not even)",
                                                   "is(n\'t nominated| not nominated|n\'t even nominated| not even nominated)",
-                                                  "was(n\'t| not)", "was(n\'t even | not even )",
+                                                  "was(n\'t| not|n\'t even | not even )",
                                                   "was(n\'t nominated| not nominated|n\'t even nominated| not even nominated)",
-                                                  "should(\'ve been| have been| be) nominated", "next year"], exclude=True, _or=True)
+                                                  "should(\'ve been| have been| be) nominated", "next year", "congrat(|s|ulations)"], exclude=True, _or=True)
     nom_result_2 = find_nominees_w_awards(nom_for_tweets, "([A-Z][\w-]*(?:\s+[A-Z][\w-]*)+)")
 
-    #print("nom_result_2: ", nom_result_2)
 
-    should_have_won_tweets = filter_tweets(tweets, ["should(\'ve| have) wo(n|n for) best", "should(\'ve| have) wi(n|n for) best"], _or=True)
-    potential_nominees_phrases_should = []
-    for pair in [('(.*)(nomin(ee|ees|ated|ation))(.*)for(.*?)', 0), ('(.*)(should have won)(.*)', 0)]:
-        potential_nominees_phrases_should = potential_nominees_phrases_should + \
-                                     groups_around_regex(should_have_won_tweets, pair[0], pair[1])
-    #print("potential_nominees_phrases_should: ", potential_nominees_phrases_should)
-    # exclude negations
-    should_have_won_tweets = filter_tweets(should_have_won_tweets, ["not nom(inating|ated)","not a nominee", "n(ot|n\t) get nominated", "not even nom(inating|ated|)", "is(n\'t| not|n\'t even | not even)",
-                                                  "is(n\'t nominated| not nominated|n\'t even nominated| not even nominated)",
-                                                  "was(n\'t| not)", "was(n\'t even | not even )",
-                                                  "was(n\'t nominated| not nominated|n\'t even nominated| not even nominated)",
-                                                  "should(\'ve been| have been| be) nominated", "next year"], exclude=True, _or=True)
-    nom_result_3 = find_nominees_w_awards(should_have_won_tweets, "([A-Z][\w-]*(?:\s+[A-Z][\w-]*)+)")
-
-    should_win_tweets= filter_tweets(tweets, ["should win best", "should win for best"], _or=False)
-    nom_result_4 = find_nominees_w_awards(should_win_tweets, "([A-Z][\w-]*(?:\s+[A-Z][\w-]*)+)")
-    #print("should_win_tweets: ", should_win_tweets)
-
-    nom_tweets1 = filter_tweets(tweets, ["nomin(ee|ees|ated|ation)", "should have won"], _or=True)
-    nom_tweets1 = filter_tweets(nom_tweets1, ["best"], _or=True)
-    # exclude all tweets with without nominations
-    all_nom_tweets = filter_tweets(nom_tweets1,
-                                   ["win(s|ning|ner|ners)", "present", "introduced", "(|isn\'t|is not|isn\'t even |is not even) nominated",
-                                    "should(\'ve a| have a| \'ve been| have been|) a nom(|inated|ination)",
-                                    "should(\'ve got(ten)|have got(ten)|\'ve got(ten) a|have got(ten) a|) nom(inated|ination)",
-                                    "did(n\'t get| not get |n\'t get a| not get a) no(m|minated|mination)",
-                                    "just won", "(isn\'t| is not| isn\'t a| is not a) no(minated|minee)", "goes to"], exclude=True, _or=True)
-    #print("nom_tweets3: ", all_nom_tweets)
-
-
-    filter_best_actor = filter_tweets(tweets, ["#bestactor", "#bestactress"], _or=True)
+    filter_best_actor = filter_tweets(best_tweets, ["#best", "#original(score|song)", "#screenplay"], _or=True)
     filter_best_actor = filter_tweets(filter_best_actor,
                                    ["won", "win(s|ning|ner|ners)", "present", "introduced", "(|isn\'t|is not|isn\'t even |is not even) nominated",
                                     "should(\'ve a| have a| \'ve been| have been|) a nom(|inated|ination)",
                                     "should(\'ve got(ten)|have got(ten)|\'ve got(ten) a|have got(ten) a|) nom(inated|ination)",
                                     "did(n\'t get| not get |n\'t get a| not get a) no(m|minated|mination)",
-                                    "just won", "(isn\'t| is not| isn\'t a| is not a) no(minated|minee)", "goes to", "congrats", "congratulations"], exclude=True, _or=True)
+                                    "just won", "(isn\'t| is not| isn\'t a| is not a) no(minated|minee)", "goes to", "congrat(|s|ulations)"], exclude=True, _or=True)
+
     nom_result_5 = find_nominees_w_awards(filter_best_actor, "([A-Z][\w-]*(?:\s+[A-Z][\w-]*)+)")
-
-    filter_best_actress = filter_tweets(tweets, ["#bestmotion", "#bestmotionpicture", "bestmotionpicture", "#bestpicture", "#musical", "#comedy", "#comedyormusical", "#drama", "#tvseries", "#tvshow", "#series", "#miniseries", "#tv", "#television", "#show"], _or=True)
-    filter_best_actress = filter_tweets(filter_best_actress,
-                                   ["won", "win(s|ning|ner|ners)", "present", "introduced", "(|isn\'t|is not|isn\'t even |is not even) nominated",
-                                    "should(\'ve a| have a| \'ve been| have been|) a nom(|inated|ination)",
-                                    "should(\'ve got(ten)|have got(ten)|\'ve got(ten) a|have got(ten) a|) nom(inated|ination)",
-                                    "did(n\'t get| not get |n\'t get a| not get a) no(m|minated|mination)",
-                                    "just won", "(isn\'t| is not| isn\'t a| is not a) no(minated|minee)", "goes to", "congrats", "congratulations"], exclude=True, _or=True)
-    nom_result_6 = find_nominees_w_awards(filter_best_actress, "([A-Z][\w-]*(?:\s+[A-Z][\w-]*)+)")
-
-    filter_best_actress = filter_tweets(tweets, ["#originalscore", "#originalsong", "#screenplay"], _or=True)
-    filter_best_actress = filter_tweets(filter_best_actress,
-                                   ["won", "win(s|ning|ner|ners)", "present", "introduced", "(|isn\'t|is not|isn\'t even |is not even) nominated",
-                                    "should(\'ve a| have a| \'ve been| have been|) a nom(|inated|ination)",
-                                    "should(\'ve got(ten)|have got(ten)|\'ve got(ten) a|have got(ten) a|) nom(inated|ination)",
-                                    "did(n\'t get| not get |n\'t get a| not get a) no(m|minated|mination)",
-                                    "just won", "(isn\'t| is not| isn\'t a| is not a) no(minated|minee)", "goes to", "congrats", "congratulations"], exclude=True, _or=True)
-    nom_result_7 = find_nominees_w_awards(filter_best_actress, "([A-Z][\w-]*(?:\s+[A-Z][\w-]*)+)")
 
     #filtered_out_winners = filter_tweets(filtered_out_winners, ["nom(ination|inee|inated|nominations)", "up for", "should(\'ve| have) won", "should win"], _or=True)
 
@@ -455,19 +396,7 @@ def nominee_get(actual_awards, year):
             for each in nom_result_2:
                 if each[1] == award and each[1] not in nominee_results:
                     nominee_results.append(each[0])
-            for each in nom_result_3:
-                if each[1] == award and each[1] not in nominee_results:
-                    nominee_results.append((each[0]))
-            for each in nom_result_4:
-                if each[1] == award and each[1] not in nominee_results:
-                    nominee_results.append((each[0]))
             for each in nom_result_5:
-                if each[1] == award and each[1] not in nominee_results:
-                    nominee_results.append((each[0]))
-            for each in nom_result_6:
-                if each[1] == award and each[1] not in nominee_results:
-                    nominee_results.append((each[0]))
-            for each in nom_result_7:
                 if each[1] == award and each[1] not in nominee_results:
                     nominee_results.append((each[0]))
 
@@ -481,7 +410,7 @@ def nominee_get(actual_awards, year):
                                                               'Golden', 'Globe', 'Award', 'Globes', 'Best',
                                                               'supporting', "actor", "actress", "motion", "picture",
                                                               "tv", "television", "series", "show", "foreign", "film",
-                                                              "drama"],)
+                                                              "drama", "comedy", "musical"],)
 
             values, counts = np.unique(nominee_results_cleaned, return_counts=True)
 
@@ -507,6 +436,6 @@ def nominee_get(actual_awards, year):
 
 
 #OFFICIAL_AWARDS_1315 = ['cecil b. demille award', 'best motion picture - drama', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best performance by an actor in a motion picture - comedy or musical', 'best animated feature film', 'best foreign language film', 'best performance by an actress in a supporting role in a motion picture', 'best performance by an actor in a supporting role in a motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama',
-#                         'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best television series - comedy or musical', 'best performance by an actress in a television series - comedy or musical', 'best performance by an actor in a television series - comedy or musical', 'best mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television']
+#                     'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best television series - comedy or musical', 'best performance by an actress in a television series - comedy or musical', 'best performance by an actor in a television series - comedy or musical', 'best mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television']
 
-#print(nominee_get(OFFICIAL_AWARDS_1315, 2015))
+#print(nominee_get(OFFICIAL_AWARDS_1315, 2013))
