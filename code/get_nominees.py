@@ -343,15 +343,14 @@ def nominee_get(actual_awards, year):
     tweets = load_tweets(f'../data/gg{year}.json')
     # print(f'Answers: {list(load_answers("../data/gg2013answers.json")["nominees"])}')
 
-    best_tweets = filter_tweets(tweets, ["best"], _or=True)
 
     # find all potential nominees with "up for"
-    up_for_tweets = filter_tweets(best_tweets, ["up for best", "rooting for"], _or=True)
+    up_for_tweets = filter_tweets(tweets, ["up for best", "rooting for"], _or=True)
     # exclude negations
 
     nom_result_1 = find_nominees_w_awards(up_for_tweets, "([A-Z][\w-]*(?:\s+[A-Z][\w-]*)+)")
 
-    nom_for_tweets = filter_tweets(best_tweets, ["nominated for best", "shoul(d\'ve|d have) wo(n|n for)"], _or=True)
+    nom_for_tweets = filter_tweets(tweets, ["nominated for best", "shoul(d\'ve|d have) wo(n|n for)"], _or=True)
     #print("nom_result_1: ", nom_result_1)
     # exclude negations
     nom_for_tweets = filter_tweets(nom_for_tweets,["not nom(inating|ated)","not a nominee", "n(ot|\'t) get nominated", "not even nom(inating|ated|)", "is(n\'t| not|n\'t even | not even)",
@@ -362,7 +361,7 @@ def nominee_get(actual_awards, year):
     nom_result_2 = find_nominees_w_awards(nom_for_tweets, "([A-Z][\w-]*(?:\s+[A-Z][\w-]*)+)")
 
 
-    filter_best_actor = filter_tweets(best_tweets, ["#best", "#original(score|song)", "#screenplay"], _or=True)
+    filter_best_actor = filter_tweets(tweets, ["#best", "#original(score|song)", "#screenplay"], _or=True)
     filter_best_actor = filter_tweets(filter_best_actor,
                                    ["won", "win(s|ning|ner|ners)", "present", "introduced", "(|isn\'t|is not|isn\'t even |is not even) nominated",
                                     "should(\'ve a| have a| \'ve been| have been|) a nom(|inated|ination)",
